@@ -58,7 +58,7 @@ HRESULT Object3D::CreateConstBuffer()
                                                             IID_PPV_ARGS(&constBuffer));
 
     // デスクリプタヒープ1つ分のサイズ
-    UINT64 descHandleIncrementSize = dx12.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    UINT descHandleIncrementSize = dx12.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
 
     // CBVのCPUデスクリプタハンドルを計算
     cpuDescHandleCBV = render.GetBasicDescHeap()->GetCPUDescriptorHandleForHeapStart();

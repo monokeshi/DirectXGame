@@ -86,7 +86,7 @@ bool Application::Initialize()
     ShowWindow(hwnd, SW_SHOW);
 
     // オブジェクト
-    for ( int i = 0; i < 10; i++ )
+    for ( int i = 0; i < 100; i++ )
     {
         XMMATRIX *matWorldParent = nullptr;
         if ( i > 0 )

@@ -82,6 +82,12 @@ void Texture::CreateShaderResouceView()
     gpuDescHandleSRV.ptr += (CONSTANT_BUFFER_NUM + textureNum) * descHandleIncrementSize;
 
     ++textureNum;
+    // テクスチャ数がデスクリプタヒープで設定したテクスチャバッファ数を上回らない
+    if ( textureNum > TEXTURE_BUFFER_NUM )
+    {
+        assert(0);
+        return;
+    }
 
     // シェーダーリソースビュー設定
     srvDesc.Format = metadata.format;                       // RGBA

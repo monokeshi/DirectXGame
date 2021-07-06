@@ -33,8 +33,8 @@ private:
     XMFLOAT3 scale;                             // スケーリング倍率
     XMFLOAT3 rotation;                          // 回転角
     Microsoft::WRL::ComPtr<ID3D12Resource> constBuffer = nullptr;      // 定数バッファ
-    D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandleCBV;
-    D3D12_GPU_DESCRIPTOR_HANDLE gpuDescHandleCBV;
+    D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandleCBV{};
+    D3D12_GPU_DESCRIPTOR_HANDLE gpuDescHandleCBV{};
 
     // 定数バッファの生成
     HRESULT CreateConstBuffer();
