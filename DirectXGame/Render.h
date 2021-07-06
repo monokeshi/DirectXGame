@@ -13,13 +13,13 @@ class Render
 private:
     DirectX12Wrapper &dx12;
 
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> basicDescHeap = nullptr;
-    D3D12_DESCRIPTOR_RANGE descRangeCBV{};              // デスクリプタレンジ 定数用
-    D3D12_DESCRIPTOR_RANGE descRangeSRV{};              // デスクリプタレンジ テクスチャ用
-    D3D12_ROOT_PARAMETER rootParams[2]{};               // ルートパラメータ
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature = nullptr;       // ルートシグネチャ
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState = nullptr;       // パイプライン
-    D3D12_STATIC_SAMPLER_DESC samplerDesc{};            // テクスチャサンプラー
+    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> basicDescHeap;
+    D3D12_DESCRIPTOR_RANGE descRangeCBV{};                      // デスクリプタレンジ 定数用
+    D3D12_DESCRIPTOR_RANGE descRangeSRV{};                      // デスクリプタレンジ テクスチャ用
+    D3D12_ROOT_PARAMETER rootParams[2]{};                       // ルートパラメータ
+    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;  // ルートシグネチャ
+    Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;  // パイプライン
+    D3D12_STATIC_SAMPLER_DESC samplerDesc{};                    // テクスチャサンプラー
 
     // シェーダーまわり
     ID3DBlob *vsBlob = nullptr;    // 頂点シェーダオブジェクト

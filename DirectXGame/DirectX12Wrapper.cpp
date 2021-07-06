@@ -196,6 +196,7 @@ HRESULT DirectX12Wrapper::CreateSwapChain(const HWND &hwnd)
                                                       nullptr,
                                                       &swapChain1);
 
+    // 生成したIDXGISwapChain1のオブジェクトをIDXGISwapChain4に変換
     swapChain1.As(&swapChain);
 
     return result;

@@ -13,26 +13,26 @@ private:
     template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
 
     // DXGIまわり
-    ComPtr<IDXGIFactory6> dxgiFactory = nullptr;
-    ComPtr<IDXGISwapChain4> swapChain = nullptr;
+    ComPtr<IDXGIFactory6> dxgiFactory;
+    ComPtr<IDXGISwapChain4> swapChain;
 
     // DirectX12まわり
-    ComPtr<ID3D12Device >dev = nullptr;
-    ComPtr<ID3D12CommandAllocator> cmdAllocator = nullptr;
-    ComPtr<ID3D12GraphicsCommandList> cmdList = nullptr;
-    ComPtr<ID3D12CommandQueue> cmdQueue = nullptr;
+    ComPtr<ID3D12Device >dev;
+    ComPtr<ID3D12CommandAllocator> cmdAllocator;
+    ComPtr<ID3D12GraphicsCommandList> cmdList;
+    ComPtr<ID3D12CommandQueue> cmdQueue;
 
     // バッファまわり
     std::vector<ComPtr<ID3D12Resource>> backBuffers;    // バックバッファ
-    ComPtr<ID3D12DescriptorHeap> rtvHeaps = nullptr;    // レンダーターゲット用デスクリプタヒープ
+    ComPtr<ID3D12DescriptorHeap> rtvHeaps;              // レンダーターゲット用デスクリプタヒープ
     D3D12_DESCRIPTOR_HEAP_DESC heapDesc{};              // デスクリプタヒープ
 
-    ComPtr<ID3D12DescriptorHeap> dsvHeap = nullptr;
+    ComPtr<ID3D12DescriptorHeap> dsvHeap;
 
-    ComPtr<ID3D12Resource> depthBuffer = nullptr;
+    ComPtr<ID3D12Resource> depthBuffer;
 
     // フェンス
-    ComPtr<ID3D12Fence> fence = nullptr;
+    ComPtr<ID3D12Fence> fence;
     UINT64 fenceVal = 0;
 
     D3D12_RESOURCE_BARRIER barrierDesc{};
