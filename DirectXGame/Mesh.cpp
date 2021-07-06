@@ -243,21 +243,10 @@ HRESULT Mesh::CreateVertBuffer()
     // 頂点データ全体のサイズ = 頂点データ一つ分のサイズ * 頂点データの要素数
     UINT sizeVB = static_cast<UINT>(sizeof(Vertex) * vertices.size());
 
-    // 頂点バッファの設定
-    heapProp.Type = D3D12_HEAP_TYPE_UPLOAD; // GPUへの転送用
-
-    resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    resDesc.Width = sizeVB;        //頂点データ全体のサイズ
-    resDesc.Height = 1;
-    resDesc.DepthOrArraySize = 1;
-    resDesc.MipLevels = 1;
-    resDesc.SampleDesc.Count = 1;
-    resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-
     // 頂点バッファの生成
-    auto result = dx12.GetDevice()->CreateCommittedResource(&heapProp, // ヒープ設定
+    auto result = dx12.GetDevice()->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // アップロード可能
                                                             D3D12_HEAP_FLAG_NONE,
-                                                            &resDesc,  //リソース設定
+                                                            &CD3DX12_RESOURCE_DESC::Buffer(sizeVB),
                                                             D3D12_RESOURCE_STATE_GENERIC_READ,
                                                             nullptr,
                                                             IID_PPV_ARGS(&vertBuffer));
@@ -274,13 +263,13 @@ HRESULT Mesh::CreateVertBuffer()
 // インデックスバッファの生成
 HRESULT Mesh::CreateIndexBuffer()
 {
-    // インデックスバッファの確保
-    resDesc.Width = indices.size() * sizeof(short); // インデックス情報が入る分のサイズ
+    // インデックスデータ全体のサイズ
+    UINT sizeIB = static_cast<UINT>(indices.size() * sizeof(short));
 
-    // GPUリソースの生成
-    auto result = dx12.GetDevice()->CreateCommittedResource(&heapProp, // ヒープ設定
+    // インデックスバッファの生成
+    auto result = dx12.GetDevice()->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // アップロード可能
                                                             D3D12_HEAP_FLAG_NONE,
-                                                            &resDesc,  //リソース設定
+                                                            &CD3DX12_RESOURCE_DESC::Buffer(sizeIB),
                                                             D3D12_RESOURCE_STATE_GENERIC_READ,
                                                             nullptr,
                                                             IID_PPV_ARGS(&indexBuffer));

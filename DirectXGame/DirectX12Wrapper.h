@@ -35,11 +35,6 @@ private:
     ComPtr<ID3D12Fence> fence;
     UINT64 fenceVal = 0;
 
-    D3D12_RESOURCE_BARRIER barrierDesc{};
-
-    D3D12_VIEWPORT viewPort;    // ビューポート
-    D3D12_RECT scissorRect;     // シザー矩形
-
     // 入力デバイス
     IDirectInputDevice8 *devkeyboard = nullptr;
 

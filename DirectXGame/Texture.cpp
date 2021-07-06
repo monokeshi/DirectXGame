@@ -2,6 +2,7 @@
 #include "DirectX12Wrapper.h"
 #include "Define.h"
 
+#include <d3dx12.h>
 #pragma comment(lib, "d3d12.lib")
 
 #include <assert.h>
@@ -35,22 +36,16 @@ HRESULT Texture::CreateTextureBuffer()
 {
     const Image *img = scratchImg.GetImage(0, 0, 0);    // 生データ抽出
 
-    // テクスチャヒープ設定
-    texHeapProp.Type = D3D12_HEAP_TYPE_CUSTOM;
-    texHeapProp.CPUPageProperty = D3D12_CPU_PAGE_PROPERTY_WRITE_BACK;
-    texHeapProp.MemoryPoolPreference = D3D12_MEMORY_POOL_L0;
-
     // リソース設定
-    texResDesc.Dimension = static_cast<D3D12_RESOURCE_DIMENSION>(metadata.dimension);   // 2Dテクスチャ用
-    texResDesc.Format = metadata.format;                                                // RGBSフォーマット
-    texResDesc.Width = metadata.width;                                                  // 幅
-    texResDesc.Height = static_cast<UINT>(metadata.height);                             // 高さ
-    texResDesc.DepthOrArraySize = static_cast<UINT16>(metadata.arraySize);
-    texResDesc.MipLevels = static_cast<UINT16>(metadata.mipLevels);
-    texResDesc.SampleDesc.Count = 1;
+    CD3DX12_RESOURCE_DESC texResDesc = CD3DX12_RESOURCE_DESC::Tex2D(metadata.format,
+                                                                    metadata.width,
+                                                                    static_cast<UINT>(metadata.height),
+                                                                    static_cast<UINT16>(metadata.arraySize),
+                                                                    static_cast<UINT16>(metadata.mipLevels));
 
-    // GPUリソースの生成
-    auto result = dx12.GetDevice()->CreateCommittedResource(&texHeapProp,
+    // テクスチャバッファの生成
+    auto result = dx12.GetDevice()->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK,
+                                                                                     D3D12_MEMORY_POOL_L0),
                                                             D3D12_HEAP_FLAG_NONE,
                                                             &texResDesc,
                                                             D3D12_RESOURCE_STATE_GENERIC_READ,  // テクスチャ用指定

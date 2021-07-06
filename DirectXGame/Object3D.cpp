@@ -35,24 +35,12 @@ Object3D::~Object3D()
 // 定数バッファの生成
 HRESULT Object3D::CreateConstBuffer()
 {
-    // ヒープ設定
-    D3D12_HEAP_PROPERTIES heapProp{};
-    heapProp.Type = D3D12_HEAP_TYPE_UPLOAD;   // GPUへの転送用
-
-    // リソース設定
-    D3D12_RESOURCE_DESC resDesc{};
-    resDesc.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    resDesc.Width = (sizeof(ConstBufferData) + 0xff) & ~0xff; // 256バイトアライメント
-    resDesc.Height = 1;
-    resDesc.DepthOrArraySize = 1;
-    resDesc.MipLevels = 1;
-    resDesc.SampleDesc.Count = 1;
-    resDesc.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
+    UINT sizeCB = static_cast<UINT>((sizeof(ConstBufferData) + 0xff) & ~0xff);
 
     // 定数バッファの生成
-    auto result = dx12.GetDevice()->CreateCommittedResource(&heapProp, // ヒープ設定
+    auto result = dx12.GetDevice()->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_UPLOAD), // アップロード可能
                                                             D3D12_HEAP_FLAG_NONE,
-                                                            &resDesc,  // リソース設定
+                                                            &CD3DX12_RESOURCE_DESC::Buffer(sizeCB),
                                                             D3D12_RESOURCE_STATE_GENERIC_READ,
                                                             nullptr,
                                                             IID_PPV_ARGS(&constBuffer));

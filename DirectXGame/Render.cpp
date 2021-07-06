@@ -18,6 +18,9 @@ Render::Render(DirectX12Wrapper &dx12):
     auto result = CreateDescriptorHeap();
     assert(SUCCEEDED(result));
 
+    // ルートパラメータの設定
+    SettingRootParameter();
+
     // テクスチャサンプラー
     SettingTextureSampler();
 
@@ -46,69 +49,46 @@ HRESULT Render::CreateDescriptorHeap()
     // デスクリプタヒープの生成
     auto result = dx12.GetDevice()->CreateDescriptorHeap(&descHeapDesc,
                                                          IID_PPV_ARGS(&basicDescHeap));
-    assert(SUCCEEDED(result));
-
-    // デスクリプタヒープテーブル(定数用)の設定
-    descRangeCBV.NumDescriptors = 1;                            // 定数一つ
-    descRangeCBV.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_CBV;   // 種別は定数
-    descRangeCBV.BaseShaderRegister = 0;                        // 0番スロットから
-    descRangeCBV.OffsetInDescriptorsFromTableStart =
-        D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;                   // 標準
-
-    // デスクリプタヒープテーブル(テクスチャ用)の設定
-    descRangeSRV.NumDescriptors = 1;                            // テクスチャ一つ
-    descRangeSRV.RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;   // 種別はテクスチャ
-    descRangeSRV.BaseShaderRegister = 0;                        // 0番スロットから
-    descRangeSRV.OffsetInDescriptorsFromTableStart =
-        D3D12_DESCRIPTOR_RANGE_OFFSET_APPEND;                   // 標準
-
-    // ルートパラメータ(定数用)の設定
-    rootParams[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;   // 種別
-    rootParams[0].DescriptorTable.pDescriptorRanges = &descRangeCBV;            // デスクリプタレンジ
-    rootParams[0].DescriptorTable.NumDescriptorRanges = 1;                      // デスクリプタレンジ数
-    rootParams[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;               // 全てのシェーダーから見える
-
-    // ルートパラメータ(テクスチャ用)の設定
-    rootParams[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;   // 種別
-    rootParams[1].DescriptorTable.pDescriptorRanges = &descRangeSRV;            // デスクリプタレンジ
-    rootParams[1].DescriptorTable.NumDescriptorRanges = 1;                      // デスクリプタレンジ数
-    rootParams[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;               // 全てのシェーダーから見える
 
     return result;
+}
+
+// ルートパラメータの設定
+void Render::SettingRootParameter()
+{
+    // デスクリプタヒープテーブル(定数用)の設定
+    descRangeCBV.Init(D3D12_DESCRIPTOR_RANGE_TYPE_CBV, 1, 0);   // b0レジスタ
+
+    // デスクリプタヒープテーブル(テクスチャ用)の設定
+    descRangeSRV.Init(D3D12_DESCRIPTOR_RANGE_TYPE_SRV, 1, 0);   // t0レジスタ
+
+    // ルートパラメータ(定数用)の設定
+    rootParams[0].InitAsDescriptorTable(1, &descRangeCBV);
+
+    // ルートパラメータ(テクスチャ用)の設定
+    rootParams[1].InitAsDescriptorTable(1, &descRangeSRV);
 }
 
 // テクスチャサンプラーの設定
 void Render::SettingTextureSampler()
 {
-    samplerDesc.AddressU = D3D12_TEXTURE_ADDRESS_MODE_WRAP;                 // 横繰り返し(タイリング)
-    samplerDesc.AddressV = D3D12_TEXTURE_ADDRESS_MODE_WRAP;                 // 縦繰り返し(タイリング)
-    samplerDesc.AddressW = D3D12_TEXTURE_ADDRESS_MODE_WRAP;                 // 奥行繰り返し(タイリング)
-    samplerDesc.BorderColor = D3D12_STATIC_BORDER_COLOR_TRANSPARENT_BLACK;  // ボーダーの時は黒
-    samplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;                    // 補間しない(ニアレストネイバー)
-    samplerDesc.MaxLOD = D3D12_FLOAT32_MAX;                                 // ミニマップ最大値
-    samplerDesc.MinLOD = 0.0f;                                              // ミニマップ最小値
-    samplerDesc.ComparisonFunc = D3D12_COMPARISON_FUNC_NEVER;
-    samplerDesc.ShaderVisibility = D3D12_SHADER_VISIBILITY_PIXEL;           // ピクセルシェーダーからのみ可視
+    samplerDesc = CD3DX12_STATIC_SAMPLER_DESC(0);
 }
 
 // ルートシグネチャ生成
 HRESULT Render::CreateRootSignature()
 {
-    D3D12_ROOT_SIGNATURE_DESC rootSignatureDesc{};
-    rootSignatureDesc.Flags = D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT;
-    rootSignatureDesc.pParameters = rootParams;                 // ルートパラメータの先頭アドレス
-    rootSignatureDesc.NumParameters = _countof(rootParams);     // ルートパラメータ数
-    rootSignatureDesc.pStaticSamplers = &samplerDesc;
-    rootSignatureDesc.NumStaticSamplers = 1;
+    CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
+    rootSignatureDesc.Init_1_0(_countof(rootParams), rootParams, 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
-    ComPtr<ID3DBlob> rootSigBlob = nullptr;
-    auto result = D3D12SerializeRootSignature(&rootSignatureDesc,
+    ComPtr<ID3DBlob> rootSigBlob;
+    auto result = D3DX12SerializeVersionedRootSignature(&rootSignatureDesc,
                                               D3D_ROOT_SIGNATURE_VERSION_1_0,
                                               &rootSigBlob,
                                               &errorBlob);
+    assert(SUCCEEDED(result));
 
     // ルートシグネチャの生成
-    assert(SUCCEEDED(result));
     result = dx12.GetDevice()->CreateRootSignature(0,
                                                    rootSigBlob->GetBufferPointer(),
                                                    rootSigBlob->GetBufferSize(),
@@ -209,16 +189,12 @@ HRESULT Render::CreateGraphicsPipeline()
     // グラフィックスパイプライン設定
     // 頂点シェーダ、ピクセルシェーダをパイプラインに設定
     D3D12_GRAPHICS_PIPELINE_STATE_DESC gpipeline{};
-    gpipeline.VS.pShaderBytecode = vsBlob->GetBufferPointer();
-    gpipeline.VS.BytecodeLength = vsBlob->GetBufferSize();
-    gpipeline.PS.pShaderBytecode = psBlob->GetBufferPointer();
-    gpipeline.PS.BytecodeLength = psBlob->GetBufferSize();
+    gpipeline.VS = CD3DX12_SHADER_BYTECODE(vsBlob.Get());
+    gpipeline.PS = CD3DX12_SHADER_BYTECODE(psBlob.Get());
 
     // サンプルマスクとラスタライズステート設定
     gpipeline.SampleMask = D3D12_DEFAULT_SAMPLE_MASK;           // 標準設定
-    gpipeline.RasterizerState.CullMode = D3D12_CULL_MODE_BACK;  // 背面をカリング
-    gpipeline.RasterizerState.FillMode = D3D12_FILL_MODE_SOLID; // ポリゴン内塗りつぶし
-    gpipeline.RasterizerState.DepthClipEnable = true;           // 深度クリッピングを有効に
+    gpipeline.RasterizerState = CD3DX12_RASTERIZER_DESC(D3D12_DEFAULT);
 
     // レンダーターゲットのブレンド設定
     D3D12_RENDER_TARGET_BLEND_DESC &blendDesc = gpipeline.BlendState.RenderTarget[0];
@@ -247,9 +223,7 @@ HRESULT Render::CreateGraphicsPipeline()
     gpipeline.pRootSignature = rootSignature.Get();
 
     // デプスステンシルステートの設定
-    gpipeline.DepthStencilState.DepthEnable = true;                             // 深度テストを行う
-    gpipeline.DepthStencilState.DepthWriteMask = D3D12_DEPTH_WRITE_MASK_ALL;    // 書き込み可能
-    gpipeline.DepthStencilState.DepthFunc = D3D12_COMPARISON_FUNC_LESS;         // 小さければ合格
+    gpipeline.DepthStencilState = CD3DX12_DEPTH_STENCIL_DESC(D3D12_DEFAULT);
     gpipeline.DSVFormat = DXGI_FORMAT_D32_FLOAT;                                // 深度値フォーマット
 
     // パイプラインステートの生成

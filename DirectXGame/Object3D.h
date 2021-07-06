@@ -6,6 +6,7 @@
 #include <dxgi1_6.h>
 #include <DirectXMath.h>
 #include <DirectXTex.h>
+#include <d3dx12.h>
 
 #include <vector>
 #include <wrl.h>
@@ -33,8 +34,8 @@ private:
     XMFLOAT3 scale;                                     // スケーリング倍率
     XMFLOAT3 rotation;                                  // 回転角
     Microsoft::WRL::ComPtr<ID3D12Resource> constBuffer; // 定数バッファ
-    D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandleCBV{};
-    D3D12_GPU_DESCRIPTOR_HANDLE gpuDescHandleCBV{};
+    CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleCBV{};
+    CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleCBV{};
 
     // 定数バッファの生成
     HRESULT CreateConstBuffer();

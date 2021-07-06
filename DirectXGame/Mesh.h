@@ -34,8 +34,6 @@ private:
     std::vector<unsigned short> indices;        // インデックスデータ
     ID3D12Resource *indexBuffer = nullptr;      // インデックスバッファ
     D3D12_INDEX_BUFFER_VIEW ibView{};           // インデックスバッファビュー
-    D3D12_RESOURCE_DESC resDesc{};              // リソース設定
-    D3D12_HEAP_PROPERTIES heapProp{};           // ヒープ設定
 
     // 四角形(平面)を生成
     void CreateRectangle();

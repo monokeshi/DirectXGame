@@ -16,8 +16,6 @@ private:
     DirectX::TexMetadata metadata{};
     DirectX::ScratchImage scratchImg{};
     ID3D12Resource *texBuff = nullptr;                  // テクスチャバッファ
-    D3D12_HEAP_PROPERTIES texHeapProp{};
-    D3D12_RESOURCE_DESC texResDesc{};
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};          // 設定構造体
 
     D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV{};

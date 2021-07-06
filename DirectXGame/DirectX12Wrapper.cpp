@@ -3,6 +3,7 @@
 #include "Define.h"
 
 #include <d3d12.h>
+#include <d3dx12.h>
 #pragma comment(lib, "d3d12.lib")
 #pragma comment(lib, "dxgi.lib")
 #pragma comment(lib, "dxguid.lib")
@@ -224,12 +225,9 @@ HRESULT DirectX12Wrapper::CreateFinalRenderTarget()
         // スワップチェーンからバッファを取得
         result = swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffers[i]));
         assert(SUCCEEDED(result));
-        // デスクリプタヒープのハンドルを取得
-        D3D12_CPU_DESCRIPTOR_HANDLE handle = rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-        // 裏か表かでアドレスがずれる
-        handle.ptr += i * dev->GetDescriptorHandleIncrementSize(heapDesc.Type);
-        // レンダーターゲットビューの生成
-        dev->CreateRenderTargetView(backBuffers[i].Get(), nullptr, handle);
+        dev->CreateRenderTargetView(backBuffers[i].Get(), nullptr, CD3DX12_CPU_DESCRIPTOR_HANDLE(rtvHeaps->GetCPUDescriptorHandleForHeapStart(),
+                                                                                                 i,
+                                                                                                 dev->GetDescriptorHandleIncrementSize(heapDesc.Type)));
     }
 
     return result;
@@ -238,31 +236,20 @@ HRESULT DirectX12Wrapper::CreateFinalRenderTarget()
 // 深度バッファの生成
 HRESULT DirectX12Wrapper::CreateDepthBuffer()
 {
-    // リソース設定
-    D3D12_RESOURCE_DESC depthResDesc{};
-    depthResDesc.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    depthResDesc.Width = WINDOW_WIDTH;                              // レンダーターゲットに合わせる
-    depthResDesc.Height = WINDOW_HEIGHT;                            // レンダーターゲットに合わせる
-    depthResDesc.DepthOrArraySize = 1;
-    depthResDesc.Format = DXGI_FORMAT_D32_FLOAT;                    // 深度値フォーマット
-    depthResDesc.SampleDesc.Count = 1;
-    depthResDesc.Flags = D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL;   // デプスステンシル
+    // 深度バッファリソース設定
+    CD3DX12_RESOURCE_DESC depthResDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_D32_FLOAT,
+                                                                      WINDOW_WIDTH,
+                                                                      WINDOW_HEIGHT,
+                                                                      1, 0,
+                                                                      1, 0,
+                                                                      D3D12_RESOURCE_FLAG_ALLOW_DEPTH_STENCIL);
 
-    // 深度値ヒーププロパティ
-    D3D12_HEAP_PROPERTIES depthHeapProp{};
-    depthHeapProp.Type = D3D12_HEAP_TYPE_DEFAULT;
-
-    // 深度値のクリア設定
-    D3D12_CLEAR_VALUE depthClearValue{};
-    depthClearValue.DepthStencil.Depth = 1.0f;      // 深度値1.0f(最大値)でクリア
-    depthClearValue.Format = DXGI_FORMAT_D32_FLOAT; // 深度値フォーマット
-
-    // リソース生成   
-    auto result = dev->CreateCommittedResource(&depthHeapProp,
+    // 深度バッファの生成
+    auto result = dev->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_HEAP_TYPE_DEFAULT),
                                                D3D12_HEAP_FLAG_NONE,
                                                &depthResDesc,
                                                D3D12_RESOURCE_STATE_DEPTH_WRITE,    // 深度値書き込みに使用
-                                               &depthClearValue,
+                                               &CD3DX12_CLEAR_VALUE(DXGI_FORMAT_D32_FLOAT, 1.0f, 0),
                                                IID_PPV_ARGS(&depthBuffer));
     assert(SUCCEEDED(result));
 
@@ -326,16 +313,13 @@ void DirectX12Wrapper::BeginDraw()
     UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
 
     // リソースバリアで書き込み可能に変更
-    barrierDesc.Transition.pResource = backBuffers[bbIndex].Get();          // バックバッファを指定
-    barrierDesc.Transition.StateBefore = D3D12_RESOURCE_STATE_PRESENT;      // 表示から
-    barrierDesc.Transition.StateAfter = D3D12_RESOURCE_STATE_RENDER_TARGET; // 描画
-    cmdList->ResourceBarrier(1, &barrierDesc);
+    cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(backBuffers[bbIndex].Get(),
+                                                                      D3D12_RESOURCE_STATE_PRESENT, D3D12_RESOURCE_STATE_RENDER_TARGET));
 
     // 描画先指定
     // レンダーターゲットビュー用ディスクリプタヒープのハンドルを取得
-    D3D12_CPU_DESCRIPTOR_HANDLE rtvH =
-        rtvHeaps->GetCPUDescriptorHandleForHeapStart();
-    rtvH.ptr += bbIndex * dev->GetDescriptorHandleIncrementSize(heapDesc.Type);
+    CD3DX12_CPU_DESCRIPTOR_HANDLE rtvH =
+        CD3DX12_CPU_DESCRIPTOR_HANDLE(rtvHeaps->GetCPUDescriptorHandleForHeapStart(), bbIndex, dev->GetDescriptorHandleIncrementSize(heapDesc.Type));
     // 深度ステンシルビュー用のデスクリプタヒープのハンドルを取得
     D3D12_CPU_DESCRIPTOR_HANDLE dsvH = dsvHeap->GetCPUDescriptorHandleForHeapStart();
     cmdList->OMSetRenderTargets(1, &rtvH, false, &dsvH);
@@ -348,33 +332,22 @@ void DirectX12Wrapper::BeginDraw()
 
     // 描画コマンドここから
     // ビューポートの設定
-    viewPort.Width = static_cast<FLOAT>(WINDOW_WIDTH);      // 横幅
-    viewPort.Height = static_cast<FLOAT>(WINDOW_HEIGHT);    // 縦幅
-    viewPort.TopLeftX = 0;           // 左上X
-    viewPort.TopLeftY = 0;           // 左上Y
-    viewPort.MinDepth = 0.0f;        // 最小深度(0でよい)
-    viewPort.MaxDepth = 1.0f;        // 最大深度(1でよい)
-    cmdList->RSSetViewports(1, &viewPort);
+    cmdList->RSSetViewports(1, &CD3DX12_VIEWPORT(0.0f, 0.0f, static_cast<FLOAT>(WINDOW_WIDTH), static_cast<FLOAT>(WINDOW_HEIGHT)));
 
     // シザー矩形の設定
-    scissorRect.left = 0;                                   // 切り抜き座標左
-    scissorRect.right = scissorRect.left + WINDOW_WIDTH;    // 切り抜き座標右
-    scissorRect.top = 0;                                    // 切り抜き座標上
-    scissorRect.bottom = scissorRect.top + WINDOW_HEIGHT;   // 切り抜き座標下
-    cmdList->RSSetScissorRects(1, &scissorRect);
+    cmdList->RSSetScissorRects(1, &CD3DX12_RECT(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT));
 }
 
 // 描画後処理
 void DirectX12Wrapper::EndDraw()
 {
+    // バックバッファの番号を取得(2つなので0番か1番)
+    UINT bbIndex = swapChain->GetCurrentBackBufferIndex();
+
     // リソースバリアを戻す
-    barrierDesc.Transition.StateBefore =
-        D3D12_RESOURCE_STATE_RENDER_TARGET; // 描画
-
-    barrierDesc.Transition.StateAfter =
-        D3D12_RESOURCE_STATE_PRESENT; // 表示に
-
-    cmdList->ResourceBarrier(1, &barrierDesc);
+    cmdList->ResourceBarrier(1, &CD3DX12_RESOURCE_BARRIER::Transition(backBuffers[bbIndex].Get(),
+                                                                      D3D12_RESOURCE_STATE_RENDER_TARGET,
+                                                                      D3D12_RESOURCE_STATE_PRESENT));
 
     // 命令のクローズ
     cmdList->Close();

@@ -3,6 +3,7 @@
 #include <d3d12.h>
 #include <dxgi1_6.h>
 #include <DirectXMath.h>
+#include <d3dx12.h>
 
 #include <wrl.h>
 
@@ -11,23 +12,28 @@ class DirectX12Wrapper;
 class Render
 {
 private:
+    template <class T> using ComPtr = Microsoft::WRL::ComPtr<T>;
+
     DirectX12Wrapper &dx12;
 
-    Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> basicDescHeap;
-    D3D12_DESCRIPTOR_RANGE descRangeCBV{};                      // デスクリプタレンジ 定数用
-    D3D12_DESCRIPTOR_RANGE descRangeSRV{};                      // デスクリプタレンジ テクスチャ用
-    D3D12_ROOT_PARAMETER rootParams[2]{};                       // ルートパラメータ
-    Microsoft::WRL::ComPtr<ID3D12RootSignature> rootSignature;  // ルートシグネチャ
-    Microsoft::WRL::ComPtr<ID3D12PipelineState> pipelineState;  // パイプライン
+    ComPtr<ID3D12DescriptorHeap> basicDescHeap;
+    CD3DX12_DESCRIPTOR_RANGE descRangeCBV{};                    // デスクリプタレンジ 定数用
+    CD3DX12_DESCRIPTOR_RANGE descRangeSRV{};                    // デスクリプタレンジ テクスチャ用
+    CD3DX12_ROOT_PARAMETER rootParams[2]{};                     // ルートパラメータ
+    ComPtr<ID3D12RootSignature> rootSignature;                  // ルートシグネチャ
+    ComPtr<ID3D12PipelineState> pipelineState;                  // パイプライン
     D3D12_STATIC_SAMPLER_DESC samplerDesc{};                    // テクスチャサンプラー
 
     // シェーダーまわり
-    ID3DBlob *vsBlob = nullptr;    // 頂点シェーダオブジェクト
-    ID3DBlob *psBlob = nullptr;    // ピクセルシェーダオブジェクト
-    ID3DBlob *errorBlob = nullptr; //エラーオブジェクト
+    ComPtr<ID3DBlob> vsBlob = nullptr;    // 頂点シェーダオブジェクト
+    ComPtr<ID3DBlob> psBlob = nullptr;    // ピクセルシェーダオブジェクト
+    ComPtr<ID3DBlob> errorBlob = nullptr; //エラーオブジェクト
 
     // デスクリプタヒープの生成
     HRESULT CreateDescriptorHeap();
+
+    // ルートパラメータの設定
+    void SettingRootParameter();
 
     // テクスチャサンプラーの設定
     void SettingTextureSampler();
