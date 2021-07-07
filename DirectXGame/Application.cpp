@@ -86,7 +86,7 @@ bool Application::Initialize()
     ShowWindow(hwnd, SW_SHOW);
 
     // オブジェクト
-    for ( int i = 0; i < 100; i++ )
+    for ( int i = 0; i < 10; i++ )
     {
         XMMATRIX *matWorldParent = nullptr;
         if ( i > 0 )
@@ -97,7 +97,7 @@ bool Application::Initialize()
         auto obj3d = new Object3D(XMFLOAT3(0.0f, 0.0f, 10.0f * i),  // position
                                   XMFLOAT3(1.0f, 1.0f, 1.0f),       // scale
                                   XMFLOAT3(0.0f, 0.0f, 0.0f),       // rotation
-                                  *camera.get()->GetMatView(),
+                                  *camera->GetMatView(),
                                   matWorldParent,                   // 親オブジェクトのmatWorld 自身が親オブジェクトの場合はnull
                                   *dx12,
                                   *render,
@@ -113,9 +113,10 @@ bool Application::Initialize()
     }
 
     // テクスチャ
-    texture = new Texture(*dx12, render.get()->GetBasicDescHeap());
-    textureHandles.push_back(texture->LoadTexture(L"Resources/texture01.png")); // テクスチャ読み込み
-    textureHandles.push_back(texture->LoadTexture(L"Resources/texture02.png")); // テクスチャ読み込み
+    texture = new Texture(*dx12, render->GetBasicDescHeap());
+    textureHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture01.png")); // テクスチャ読み込み
+    textureHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture02.png")); // テクスチャ読み込み
+    textureHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture03.png")); // テクスチャ読み込み
 
     // メッシュ
     meshs.push_back(new Mesh(MeshList::e_RECTANGLE, *dx12));
@@ -163,7 +164,7 @@ void Application::Run()
 
         /*-------------------更新処理-------------------*/
         // キーボード情報の更新
-        ik.KeyInfoUpdate(dx12.get()->GetDevkeyboard());
+        ik.KeyInfoUpdate(dx12->GetDevkeyboard());
 
         // プレイヤーコントローラー
         plctrl.Update();
@@ -187,28 +188,31 @@ void Application::Run()
 
         /*-------------------描画処理-------------------*/
         // 描画準備
-        dx12.get()->BeginDraw();
+        dx12->BeginDraw();
 
         // パイプラインステートやルートシグネチャの設定
-        render.get()->BeginDraw();
+        render->BeginDraw();
 
         // オブジェクト
         for ( int i = 0; i < object3Ds.size(); i++ )
         {
-            int j = 0;
+            int j = 1;
             if ( i >= object3Ds.size() / 2 )
             {
-                j = 1;
+                j = 0;
             }
-            object3Ds[i]->Draw(textureHandles[j],
-                               meshs[j + 1]->GetVbView(),
-                               meshs[j + 1]->GetIbView(),
-                               meshs[j + 1]->GetIndicesNum());
+            object3Ds[i]->Draw(textureHandles[j + 1],
+                               meshs[j + 0]->GetVbView(),
+                               meshs[j + 0]->GetIbView(),
+                               meshs[j + 0]->GetIndicesNum());
         }
 
         // 描画後処理
-        dx12.get()->EndDraw();
+        dx12->EndDraw();
     }
+
+    // GPUの処理が終わるのを待つ
+    dx12->FlushGPU();
 }
 
 // 後処理

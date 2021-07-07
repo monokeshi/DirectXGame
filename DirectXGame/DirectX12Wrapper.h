@@ -64,6 +64,7 @@ public:
     void Update();
 
     // •`‰æˆ—
+    void FlushGPU();    // GPU‚Ìˆ—‚ªI‚í‚é‚Ì‚ğ‘Ò‚Â
     void BeginDraw();   // •`‰æ€”õ
     void EndDraw();     // •`‰æŒãˆ—
 

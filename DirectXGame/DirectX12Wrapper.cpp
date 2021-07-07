@@ -21,7 +21,6 @@ void EnableDebugLayer()
     ComPtr<ID3D12Debug> debugLayer = nullptr;
     auto result = D3D12GetDebugInterface(IID_PPV_ARGS(&debugLayer));
     debugLayer->EnableDebugLayer();
-    debugLayer->Release();
 }
 
 DirectX12Wrapper::DirectX12Wrapper(WNDCLASSEX w, HWND hwnd)
@@ -187,7 +186,7 @@ HRESULT DirectX12Wrapper::CreateSwapChain(const HWND &hwnd)
     swapchainDesc.Flags = DXGI_SWAP_CHAIN_FLAG_ALLOW_MODE_SWITCH;
     assert(cmdQueue != nullptr);
 
-    ComPtr<IDXGISwapChain1> swapChain1;
+    //ComPtr<IDXGISwapChain1> swapChain1;
 
     // スワップチェーン生成
     auto result = dxgiFactory->CreateSwapChainForHwnd(cmdQueue.Get(),
@@ -195,10 +194,11 @@ HRESULT DirectX12Wrapper::CreateSwapChain(const HWND &hwnd)
                                                       &swapchainDesc,
                                                       nullptr,
                                                       nullptr,
-                                                      &swapChain1);
+                                                      //&swapChain1);
+                                                      (IDXGISwapChain1 **)swapChain.ReleaseAndGetAddressOf());
 
     // 生成したIDXGISwapChain1のオブジェクトをIDXGISwapChain4に変換
-    swapChain1.As(&swapChain);
+    //swapChain1.As(&swapChain);
 
     return result;
 }
@@ -306,6 +306,20 @@ void DirectX12Wrapper::Update()
 {
 }
 
+// GPUの処理が終わるのを待つ
+void DirectX12Wrapper::FlushGPU()
+{
+    cmdQueue->Signal(fence.Get(), ++fenceVal);
+    if ( fence->GetCompletedValue() != fenceVal )
+    {
+        HANDLE event = CreateEvent(nullptr, false, false, nullptr);
+        fence->SetEventOnCompletion(fenceVal, event);
+        assert(event != nullptr);
+        WaitForSingleObject(event, INFINITE);
+        CloseHandle(event);
+    }
+}
+
 // 描画準備
 void DirectX12Wrapper::BeginDraw()
 {
@@ -355,15 +369,7 @@ void DirectX12Wrapper::EndDraw()
     // コマンドリストの実行
     ID3D12CommandList *cmdLists[] = { cmdList.Get() };  // コマンドリストの配列
     cmdQueue->ExecuteCommandLists(1, cmdLists);         // コマンドリストの実行完了を待つ
-    cmdQueue->Signal(fence.Get(), ++fenceVal);
-    if ( fence->GetCompletedValue() != fenceVal )
-    {
-        HANDLE event = CreateEvent(nullptr, false, false, nullptr);
-        fence->SetEventOnCompletion(fenceVal, event);
-        assert(event != nullptr);
-        WaitForSingleObject(event, INFINITE);
-        CloseHandle(event);
-    }
+    FlushGPU();
 
     cmdAllocator->Reset();                          // キューをクリア
     cmdList->Reset(cmdAllocator.Get(), nullptr);    // 再びコマンドリストをためる準備

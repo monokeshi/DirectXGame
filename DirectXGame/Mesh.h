@@ -4,6 +4,7 @@
 #include <DirectXMath.h>
 
 #include <vector>
+#include <wrl.h>
 
 class DirectX12Wrapper;
 
@@ -28,12 +29,12 @@ private:
 
     MeshList shapeList;
 
-    std::vector<Vertex> vertices;               // 頂点データ
-    ID3D12Resource *vertBuffer = nullptr;       // 頂点バッファ
-    D3D12_VERTEX_BUFFER_VIEW vbView{};          // 頂点バッファビュー
-    std::vector<unsigned short> indices;        // インデックスデータ
-    ID3D12Resource *indexBuffer = nullptr;      // インデックスバッファ
-    D3D12_INDEX_BUFFER_VIEW ibView{};           // インデックスバッファビュー
+    std::vector<Vertex> vertices;                       // 頂点データ
+    Microsoft::WRL::ComPtr<ID3D12Resource> vertBuffer;  // 頂点バッファ
+    D3D12_VERTEX_BUFFER_VIEW vbView{};                  // 頂点バッファビュー
+    std::vector<unsigned short> indices;                // インデックスデータ
+    Microsoft::WRL::ComPtr<ID3D12Resource> indexBuffer; // インデックスバッファ
+    D3D12_INDEX_BUFFER_VIEW ibView{};                   // インデックスバッファビュー
 
     // 四角形(平面)を生成
     void CreateRectangle();
