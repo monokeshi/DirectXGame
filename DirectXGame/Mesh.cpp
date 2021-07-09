@@ -281,7 +281,7 @@ HRESULT Mesh::CreateIndexBuffer()
     assert(SUCCEEDED(result));
 
     // 全インデックスに対して
-    for ( int i = 0; i < indices.size(); i++ )
+    for ( int i = 0; i < indices.size(); ++i )
     {
         indexMap[i] = indices[i]; // インデックスをコピー
     }
@@ -300,7 +300,7 @@ HRESULT Mesh::CreateIndexBuffer()
 // 法線を計算する
 void Mesh::CalcNormal()
 {
-    for ( int i = 0; i < indices.size() / 3; i++ )
+    for ( int i = 0; i < indices.size() / 3; ++i )
     {
         // 三角形1つごとに計算していく
         unsigned short index0 = indices[i * 3 + 0];
@@ -338,7 +338,7 @@ HRESULT Mesh::TransferVertBuffer()
     assert(SUCCEEDED(result));
 
     // 全頂点に対して
-    for ( int i = 0; i < vertices.size(); i++ )
+    for ( int i = 0; i < vertices.size(); ++i )
     {
         vertMap[i] = vertices[i]; // 座標をコピー
     }

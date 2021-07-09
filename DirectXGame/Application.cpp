@@ -9,6 +9,8 @@
 #include <DirectXMath.h>
 
 #include <assert.h>
+#include <stdlib.h>
+#include <time.h>
 
 using namespace DirectX;
 
@@ -70,6 +72,9 @@ Application &Application::GetInstance()
 // 初期化
 bool Application::Initialize()
 {
+    // シード値設定
+    srand(static_cast<unsigned int>(time(NULL)));
+
     // ウィンドウの生成
     CreateGameWindow();
 
@@ -114,9 +119,14 @@ bool Application::Initialize()
 
     // テクスチャ
     texture = new Texture(*dx12, render->GetBasicDescHeap());
-    textureHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture01.png")); // テクスチャ読み込み
-    textureHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture02.png")); // テクスチャ読み込み
-    textureHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture03.png")); // テクスチャ読み込み
+    textureHandles.push_back(texture->CreateTexture(XMFLOAT4(1.0f, 0.5f, 0.0f, 1.0f)));     // テクスチャ生成
+    textureHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture01.png"));    // テクスチャ読み込み
+    textureHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture02.png"));    // テクスチャ読み込み
+    textureHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture03.png"));    // テクスチャ読み込み
+    textureHandles.push_back(texture->CreateTexture(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)));     // テクスチャ生成
+    textureHandles.push_back(texture->CreateTexture(XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f)));     // テクスチャ生成
+    textureHandles.push_back(texture->CreateTexture(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)));     // テクスチャ生成
+
 
     // メッシュ
     meshs.push_back(new Mesh(MeshList::e_RECTANGLE, *dx12));
@@ -139,6 +149,13 @@ void Application::Run()
 
     // プレイヤーコントローラー生成
     PlayerController plctrl(PlayerController(*object3Ds[0], ik, *camera));
+
+    // 一時的なオブジェクトのテクスチャハンドルのインデックス
+    std::vector<int> texIndex;
+    for ( int i = 0; i < object3Ds.size(); ++i )
+    {
+        texIndex.push_back((rand() % (textureHandles.size() - 0)) + 0);
+    }
 
     // ゲームループ
     while ( true )
@@ -173,13 +190,13 @@ void Application::Run()
         camera->Update();
 
         // オブジェクト
-        for ( int i = 0; i < object3Ds.size(); i++ )
+        for ( int i = 0; i < object3Ds.size(); ++i )
         {
             object3Ds[i]->Update();
         }
 
         // メッシュ
-        for ( int i = 0; i < meshs.size(); i++ )
+        for ( int i = 0; i < meshs.size(); ++i )
         {
             meshs[i]->Update();
         }
@@ -194,17 +211,12 @@ void Application::Run()
         render->BeginDraw();
 
         // オブジェクト
-        for ( int i = 0; i < object3Ds.size(); i++ )
+        for ( int i = 0; i < object3Ds.size(); ++i )
         {
-            int j = 1;
-            if ( i >= object3Ds.size() / 2 )
-            {
-                j = 0;
-            }
-            object3Ds[i]->Draw(textureHandles[j + 1],
-                               meshs[j + 0]->GetVbView(),
-                               meshs[j + 0]->GetIbView(),
-                               meshs[j + 0]->GetIndicesNum());
+            object3Ds[i]->Draw(textureHandles[texIndex[i]],
+                               meshs[2]->GetVbView(),
+                               meshs[2]->GetIbView(),
+                               meshs[2]->GetIndicesNum());
         }
 
         // 描画後処理

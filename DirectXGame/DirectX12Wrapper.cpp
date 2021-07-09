@@ -102,7 +102,7 @@ HRESULT DirectX12Wrapper::InitDXGIDevice()
         adapters.push_back(tmpAdapter.Get()); // 動的配列に追加する
     }
 
-    for ( unsigned int i = 0; i < adapters.size(); i++ )
+    for ( unsigned int i = 0; i < adapters.size(); ++i )
     {
         DXGI_ADAPTER_DESC1 adesc;
         adapters[i]->GetDesc1(&adesc); // アダプターの情報を取得
@@ -220,7 +220,7 @@ HRESULT DirectX12Wrapper::CreateFinalRenderTarget()
     result = swapChain->GetDesc(&swcDesc);
     backBuffers.resize(swcDesc.BufferCount);
 
-    for ( int i = 0; i < 2; i++ )
+    for ( int i = 0; i < 2; ++i )
     {
         // スワップチェーンからバッファを取得
         result = swapChain->GetBuffer(i, IID_PPV_ARGS(&backBuffers[i]));
