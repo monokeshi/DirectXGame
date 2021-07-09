@@ -20,8 +20,8 @@ private:
     // 定数バッファ用データ構造体
     struct ConstBufferData
     {
-        XMFLOAT4 color; // 色(RGBA)
-        XMMATRIX mat;   // 3D変換行列
+        DirectX::XMFLOAT4 color; // 色(RGBA)
+        DirectX::XMMATRIX mat;   // 3D変換行列
     };
 
     DirectX12Wrapper &dx12;
@@ -30,9 +30,9 @@ private:
 
     int instanceNum;        // 自身のクラスのインスタンス数
 
-    XMFLOAT3 position;                                  // ポジション
-    XMFLOAT3 scale;                                     // スケーリング倍率
-    XMFLOAT3 rotation;                                  // 回転角
+    DirectX::XMFLOAT3 position;                                  // ポジション
+    DirectX::XMFLOAT3 scale;                                     // スケーリング倍率
+    DirectX::XMFLOAT3 rotation;                                  // 回転角
     Microsoft::WRL::ComPtr<ID3D12Resource> constBuffer; // 定数バッファ
     CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleCBV{};
     CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleCBV{};
@@ -43,11 +43,11 @@ private:
     // 定数バッファへのデータ転送
     HRESULT TransferConstBuffer();
 public:
-    Object3D(XMFLOAT3 position,
-             XMFLOAT3 scale,
-             XMFLOAT3 rotation,
-             XMMATRIX &matView,
-             XMMATRIX *matWorldParent,
+    Object3D(DirectX::XMFLOAT3 position,
+             DirectX::XMFLOAT3 scale,
+             DirectX::XMFLOAT3 rotation,
+             DirectX::XMMATRIX &matView,
+             DirectX::XMMATRIX *matWorldParent,
              DirectX12Wrapper &dx12,
              Render &render,
              int index,
@@ -76,7 +76,7 @@ public:
     void RotateY(float rotation);
     void RotateZ(float rotation);
 
-    XMMATRIX *GetMatWorld()
+    DirectX::XMMATRIX *GetMatWorld()
     {
         return matrix->GetMatWorld();
     }

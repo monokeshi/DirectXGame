@@ -7,6 +7,8 @@
 #include <dinput.h>
 #pragma comment(lib, "dinput8.lib")
 
+using namespace DirectX;
+
 PlayerController::PlayerController(Object3D &object3D,
                                    InputKey &ik,
                                    Camera &camera):

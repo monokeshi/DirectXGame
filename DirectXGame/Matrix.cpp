@@ -1,6 +1,8 @@
 #include "Matrix.h"
 #include "Define.h"
 
+using namespace DirectX;
+
 Matrix::Matrix(XMFLOAT3 &position,
                XMFLOAT3 &scale,
                XMFLOAT3 &rotation,

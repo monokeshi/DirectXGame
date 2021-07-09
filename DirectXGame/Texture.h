@@ -21,9 +21,6 @@ private:
     D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV{};
     D3D12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV{};
 
-    // 画像イメージデータの生成
-    HRESULT CreateImageData(const wchar_t *fileName);
-
     // テクスチャバッファの生成
     HRESULT CreateTextureBuffer();
 

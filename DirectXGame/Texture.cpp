@@ -18,18 +18,6 @@ Texture::~Texture()
 {
 }
 
-// 画像イメージデータの生成
-HRESULT Texture::CreateImageData(const wchar_t *fileName)
-{
-    // 読み込み
-    auto result = LoadFromWICFile(fileName, // 画像ファイル
-                                  WIC_FLAGS_NONE,
-                                  &metadata,
-                                  scratchImg);
-    assert(SUCCEEDED(result));
-
-    return result;
-}
 
 // テクスチャバッファの生成
 HRESULT Texture::CreateTextureBuffer()
@@ -100,7 +88,11 @@ void Texture::CreateShaderResouceView()
 D3D12_GPU_DESCRIPTOR_HANDLE Texture::LoadTexture(const wchar_t *fileName)
 {
     // 画像データ
-    auto result = CreateImageData(fileName);
+    // 読み込み
+    auto result = LoadFromWICFile(fileName, // 画像ファイル
+                                  WIC_FLAGS_NONE,
+                                  &metadata,
+                                  scratchImg);
     assert(SUCCEEDED(result));
 
     // テクスチャバッファ
