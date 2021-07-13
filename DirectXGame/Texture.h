@@ -2,6 +2,7 @@
 
 #include <d3d12.h>
 #include <DirectXTex.h>
+#include <d3dx12.h>
 
 #include <wrl.h>
 
@@ -37,6 +38,9 @@ private:
     std::vector<ID3D12Resource *> texBuffSprite;    // スプライト用テクスチャバッファ
     D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};      // 設定構造体
 
+    std::vector<CD3DX12_RESOURCE_DESC> texResDescObj3D;
+    std::vector<CD3DX12_RESOURCE_DESC> texResDescSprite;
+
     int obj3DTexturNum;     // オブジェクト用テクスチャ数
     int spriteTextureNum;   // スプライト用テクスチャ数
 
@@ -63,4 +67,16 @@ public:
 
     // スプライト用テクスチャの読み込み
     int LoadSpriteTexture(const wchar_t *fileName);
+
+    DirectX::XMFLOAT2 GetObj3DTextureSize(const int &texIndex)
+    {
+        return { static_cast<float>(texResDescObj3D[texIndex].Width),
+                 static_cast<float>(texResDescObj3D[texIndex].Height) };
+    }
+
+    DirectX::XMFLOAT2 GetSpriteTextureSize(const int &texIndex)
+    {
+        return { static_cast<float>(texResDescSprite[texIndex].Width),
+                 static_cast<float>(texResDescSprite[texIndex].Height) };
+    }
 };

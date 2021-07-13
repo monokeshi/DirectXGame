@@ -3,7 +3,6 @@
 #include "Define.h"
 #include "Render.h"
 
-#include <d3dx12.h>
 #pragma comment(lib, "d3d12.lib")
 
 #include <assert.h>
@@ -26,14 +25,16 @@ Texture::~Texture()
 HRESULT Texture::CreateTextureBufferObj3D()
 {
     HRESULT result = S_FALSE;
+    CD3DX12_RESOURCE_DESC texResDesc;
+
     if ( texInit == TextureInitialize::e_CREATE )
     {
         // リソース設定
-        CD3DX12_RESOURCE_DESC texResDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R32G32B32A32_FLOAT,
-                                                                        static_cast<UINT>(TEX_WIDTH),
-                                                                        static_cast<UINT>(TEX_WIDTH),
-                                                                        1,
-                                                                        1);
+        texResDesc = CD3DX12_RESOURCE_DESC::Tex2D(DXGI_FORMAT_R32G32B32A32_FLOAT,
+                                                  static_cast<UINT>(TEX_WIDTH),
+                                                  static_cast<UINT>(TEX_WIDTH),
+                                                  1,
+                                                  1);
 
         // テクスチャバッファの生成
         result = dx12.GetDevice()->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK,
@@ -57,11 +58,11 @@ HRESULT Texture::CreateTextureBufferObj3D()
         const Image *img = scratchImg.GetImage(0, 0, 0);    // 生データ抽出
 
         // リソース設定
-        CD3DX12_RESOURCE_DESC texResDesc = CD3DX12_RESOURCE_DESC::Tex2D(metadata.format,
-                                                                        metadata.width,
-                                                                        static_cast<UINT>(metadata.height),
-                                                                        static_cast<UINT16>(metadata.arraySize),
-                                                                        static_cast<UINT16>(metadata.mipLevels));
+        texResDesc = CD3DX12_RESOURCE_DESC::Tex2D(metadata.format,
+                                                  metadata.width,
+                                                  static_cast<UINT>(metadata.height),
+                                                  static_cast<UINT16>(metadata.arraySize),
+                                                  static_cast<UINT16>(metadata.mipLevels));
 
         // テクスチャバッファの生成
         result = dx12.GetDevice()->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK,
@@ -81,6 +82,8 @@ HRESULT Texture::CreateTextureBufferObj3D()
                                                   static_cast<UINT>(img->slicePitch));  // 全サイズ
     }
 
+    texResDescObj3D.push_back(texResDesc);
+
     return result;
 }
 
@@ -89,7 +92,7 @@ HRESULT Texture::CreateTextureBufferSprite()
 {
     const Image *img = scratchImg.GetImage(0, 0, 0);    // 生データ抽出
 
-       // リソース設定
+    // リソース設定
     CD3DX12_RESOURCE_DESC texResDesc = CD3DX12_RESOURCE_DESC::Tex2D(metadata.format,
                                                                     metadata.width,
                                                                     static_cast<UINT>(metadata.height),
@@ -115,6 +118,7 @@ HRESULT Texture::CreateTextureBufferSprite()
                                           static_cast<UINT>(img->rowPitch),     // 1ラインサイズ
                                           static_cast<UINT>(img->slicePitch));  // 全サイズ
 
+    texResDescSprite.push_back(texResDesc);
     texBuffSprite.push_back(tempBuff);
 
     return result;

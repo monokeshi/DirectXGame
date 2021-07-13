@@ -72,6 +72,7 @@ Application &Application::GetInstance()
 // 初期化
 bool Application::Initialize()
 {
+    /*--------------------システムや描画--------------------*/
     // シード値設定
     srand(static_cast<unsigned int>(time(NULL)));
 
@@ -85,12 +86,34 @@ bool Application::Initialize()
     render.reset(new Render(*dx12));
 
     // カメラの初期化
-    camera.reset(new Camera(XMFLOAT3(0.0f, 0.0f, -50.0f)));
+    camera.reset(new Camera({ 0.0f, 0.0f, -50.0f }));
 
     // ウィンドウ表示
     ShowWindow(hwnd, SW_SHOW);
 
-    // オブジェクト
+    /*--------------------テクスチャ--------------------*/
+    texture = new Texture(*dx12, *render, render->GetBasicDescHeap());
+
+    // オブジェクト3D用
+    texObj3DHandles.push_back(texture->CreateTexture({ 1.0f, 0.5f, 0.0f, 1.0f }));          // テクスチャ生成
+    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture01.png"));   // テクスチャ読み込み
+    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture02.png"));   // テクスチャ読み込み
+    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture03.png"));   // テクスチャ読み込み
+    texObj3DHandles.push_back(texture->CreateTexture({ 1.0f, 0.0f, 0.0f, 1.0f }));          // テクスチャ生成
+    texObj3DHandles.push_back(texture->CreateTexture({ 0.0f, 1.0f, 0.0f, 1.0f }));          // テクスチャ生成
+    texObj3DHandles.push_back(texture->CreateTexture({ 0.0f, 0.0f, 1.0f, 1.0f }));          // テクスチャ生成
+
+    // スプライト用
+    texSpriteHandles.push_back(texture->LoadSpriteTexture(L"Resources/Textures/texture01.png"));    // テクスチャ読み込み
+    texSpriteHandles.push_back(texture->LoadSpriteTexture(L"Resources/Textures/texture02.png"));    // テクスチャ読み込み
+    texSpriteHandles.push_back(texture->LoadSpriteTexture(L"Resources/Textures/texture03.png"));    // テクスチャ読み込み
+
+    /*--------------------メッシュ--------------------*/
+    meshs.push_back(new Mesh(MeshList::e_RECTANGLE, *dx12));
+    meshs.push_back(new Mesh(MeshList::e_CUBE, *dx12));
+    meshs.push_back(new Mesh(MeshList::e_TRIANGULAR_PYRAMID, *dx12));
+
+    /*--------------------オブジェクト--------------------*/
     for ( int i = 0; i < 10; ++i )
     {
         XMMATRIX *matWorldParent = nullptr;
@@ -99,10 +122,10 @@ bool Application::Initialize()
             matWorldParent = object3Ds[0]->GetMatWorld();
         }
 
-        auto obj3d = new Object3D(XMFLOAT3(0.0f, 0.0f, 10.0f * i),  // position
-                                  XMFLOAT3(1.0f, 1.0f, 1.0f),       // scale
-                                  XMFLOAT3(0.0f, 0.0f, 0.0f),       // rotation
-                                  XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), // color
+        auto obj3d = new Object3D({ 0.0f, 0.0f, 10.0f * i },  // position
+                                  { 1.0f, 1.0f, 1.0f },       // scale
+                                  { 0.0f, 0.0f, 0.0f },       // rotation
+                                  { 1.0f, 1.0f, 1.0f, 1.0f }, // color
                                   *camera->GetMatView(),
                                   matWorldParent,                   // 親オブジェクトのmatWorld 自身が親オブジェクトの場合はnull
                                   *dx12,
@@ -118,14 +141,15 @@ bool Application::Initialize()
         object3Ds.push_back(obj3d);
     }
 
-    // スプライト
+    /*--------------------スプライト--------------------*/
     for ( int i = 0; i < 1; ++i )
     {
-        auto sp = new Sprite(XMFLOAT3(0.0f, 0.0f, 0.0f),        // position
-                             0.0f,                              // rotation
-                             XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),  // color
+        auto sp = new Sprite({ WINDOW_WIDTH / 2.0f, 0.0f + i * 50, 0.0f },  // position
+                             0.0f,                                          // rotation
+                             { 1.0f, 1.0f, 1.0f, 1.0f },                    // color
                              *dx12,
-                             *render);
+                             *render,
+                             *texture);
         if ( FAILED(sp->Initialize()) )
         {
             assert(0);
@@ -134,26 +158,6 @@ bool Application::Initialize()
 
         sprites.push_back(sp);
     }
-
-    // テクスチャ
-    texture = new Texture(*dx12, *render, render->GetBasicDescHeap());
-
-    // オブジェクト3D用
-    texObj3DHandles.push_back(texture->CreateTexture(XMFLOAT4(1.0f, 0.5f, 0.0f, 1.0f)));    // テクスチャ生成
-    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture01.png"));   // テクスチャ読み込み
-    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture02.png"));   // テクスチャ読み込み
-    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture03.png"));   // テクスチャ読み込み
-    texObj3DHandles.push_back(texture->CreateTexture(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)));    // テクスチャ生成
-    texObj3DHandles.push_back(texture->CreateTexture(XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f)));    // テクスチャ生成
-    texObj3DHandles.push_back(texture->CreateTexture(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)));    // テクスチャ生成
-
-    // スプライト用
-    texSpriteHandles.push_back(texture->LoadSpriteTexture(L"Resources/Textures/texture01.png"));    // テクスチャ読み込み
-
-    // メッシュ
-    meshs.push_back(new Mesh(MeshList::e_RECTANGLE, *dx12));
-    meshs.push_back(new Mesh(MeshList::e_CUBE, *dx12));
-    meshs.push_back(new Mesh(MeshList::e_TRIANGULAR_PYRAMID, *dx12));
 
     return true;
 }
@@ -235,13 +239,6 @@ void Application::Run()
         // 描画準備
         dx12->BeginDraw();
 
-        // スプライト
-        render->BeginDrawSprite();
-        for ( int i = 0; i < sprites.size(); ++i )
-        {
-            sprites[i]->Draw(texSpriteHandles[0]);
-        }
-
         // オブジェクト
         render->BeginDrawObj3D();
         for ( int i = 0; i < object3Ds.size(); ++i )
@@ -250,6 +247,13 @@ void Application::Run()
                                meshs[2]->GetVbView(),
                                meshs[2]->GetIbView(),
                                meshs[2]->GetIndicesNum());
+        }
+
+        // スプライト
+        render->BeginDrawSprite();
+        for ( int i = 0; i < sprites.size(); ++i )
+        {
+            sprites[i]->Draw(texSpriteHandles[0]);
         }
 
         // 描画後処理

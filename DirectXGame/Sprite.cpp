@@ -2,6 +2,7 @@
 #include "DirectX12Wrapper.h"
 #include "Define.h"
 #include "Render.h"
+#include "Texture.h"
 
 #include <d3dx12.h>
 
@@ -12,14 +13,17 @@ Sprite::Sprite(
     float rotation,
     DirectX::XMFLOAT4 color,
     DirectX12Wrapper &dx12,
-    Render &render):
-    position(position), rotation(rotation), color(color), dx12(dx12), render(render)
+    Render &render,
+    Texture &texture):
+    position(position), rotation(rotation), color(color), dx12(dx12), render(render), texture(texture)
 {
+    isSetTexResolutionOnlyOnce = true;
+
     UpdateMatrix();
 }
 
 Sprite::~Sprite()
-{   
+{
 }
 
 // 行列の更新処理
@@ -35,12 +39,25 @@ void Sprite::CreateVertex()
 {
     vertices =
     {
-        /*      X       Y     Z         U     V      */
-        {{   0.0f, 100.0f, 0.0f }, { 0.0f, 1.0f }},  // 左下
-        {{   0.0f,   0.0f, 0.0f }, { 0.0f, 0.0f }},  // 左上
-        {{ 100.0f, 100.0f, 0.0f }, { 1.0f, 1.0f }},  // 右下
-        {{ 100.0f,   0.0f, 0.0f }, { 1.0f, 0.0f }},  // 右上
+        /*         U     V         */
+        {{ }, { 0.0f, 1.0f }},  // 左下
+        {{ }, { 0.0f, 0.0f }},  // 左上
+        {{ }, { 1.0f, 1.0f }},  // 右下
+        {{ }, { 1.0f, 0.0f }},  // 右上
     };
+
+    //enum
+    //{
+    //    LB, // 左下
+    //    LT, // 左上
+    //    RB, // 右下
+    //    RT  // 右上
+    //};
+
+    //vertices[LB].pos = { 0.0f, size.y, 0.0f };      // 左下
+    //vertices[LT].pos = { 0.0f,   0.0f, 0.0f };      // 左上
+    //vertices[RB].pos = { size.x, size.y, 0.0f };    // 右下
+    //vertices[RT].pos = { size.x,   0.0f, 0.0f };    // 右上
 }
 
 // 頂点バッファの生成
@@ -179,11 +196,15 @@ void Sprite::Update()
 }
 
 // 描画処理
-void Sprite::Draw(const int &textureNum)
+void Sprite::Draw(const int &texIndex, bool isSetTexResolution)
 {
-    //// テクスチャ用デスクリプタヒープの設定
-    //ID3D12DescriptorHeap *ppHeaps[] = { render.GetSpriteDescHeap() };
-    //dx12.GetCmdList()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
+    // ポリゴンサイズをテクスチャ画像の解像度に設定(一度だけ)
+    if ( isSetTexResolution &&
+        isSetTexResolutionOnlyOnce )
+    {
+        SetSize(texture.GetSpriteTextureSize(texIndex));
+        isSetTexResolutionOnlyOnce = false;
+    }
 
     // 頂点バッファビューをセット
     dx12.GetCmdList()->IASetVertexBuffers(0, 1, &vbView);
@@ -194,9 +215,33 @@ void Sprite::Draw(const int &textureNum)
     // シェーダーリソースビューをセット
     dx12.GetCmdList()->SetGraphicsRootDescriptorTable(1,
                                                       CD3DX12_GPU_DESCRIPTOR_HANDLE(render.GetSpriteDescHeap()->GetGPUDescriptorHandleForHeapStart(),
-                                                                                    textureNum,
+                                                                                    texIndex,
                                                                                     dx12.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)));
 
     // ポリゴンの描画(4頂点で四角形)
     dx12.GetCmdList()->DrawInstanced(4, 1, 0, 0);
+}
+
+// サイズを設定
+void Sprite::SetSize(DirectX::XMFLOAT2 size)
+{
+    enum
+    {
+        LB, // 左下
+        LT, // 左上
+        RB, // 右下
+        RT  // 右上
+    };
+
+    vertices[LB].pos = { 0.0f, size.y, 0.0f };      // 左下
+    vertices[LT].pos = { 0.0f,   0.0f, 0.0f };      // 左上
+    vertices[RB].pos = { size.x, size.y, 0.0f };    // 右下
+    vertices[RT].pos = { size.x,   0.0f, 0.0f };    // 右上
+
+    // 頂点バッファへのデータ転送
+    if ( FAILED(TransferVertBuffer()) )
+    {
+        assert(0);
+        return;
+    }
 }

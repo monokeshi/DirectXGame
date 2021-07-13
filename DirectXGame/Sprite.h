@@ -8,6 +8,7 @@
 
 class DirectX12Wrapper;
 class Render;
+class Texture;
 
 class Sprite
 {
@@ -26,6 +27,7 @@ private:
 
     DirectX12Wrapper &dx12;
     Render &render;
+    Texture &texture;
 
     DirectX::XMFLOAT3 position; // 座標
     float rotation;             // 回転
@@ -36,6 +38,8 @@ private:
     Microsoft::WRL::ComPtr<ID3D12Resource> vertBuffer;  // 頂点バッファ
     D3D12_VERTEX_BUFFER_VIEW vbView{};                  // 頂点バッファビュー
     Microsoft::WRL::ComPtr<ID3D12Resource> constBuffer; // 定数バッファ
+
+    bool isSetTexResolutionOnlyOnce; // Draw関数呼び出し時にSetSize関数を一度だけ呼び出すためのフラグ
 
     // 行列の更新処理
     void UpdateMatrix();
@@ -60,7 +64,8 @@ public:
            float rotation,
            DirectX::XMFLOAT4 color,
            DirectX12Wrapper &dx12,
-           Render &render);
+           Render &render,
+           Texture &texture);
     ~Sprite();
 
     // 初期化処理
@@ -70,5 +75,8 @@ public:
     void Update();
 
     // 描画処理
-    void Draw(const int &textureNum);
+    void Draw(const int &texIndex, bool isSetTexResolution = true);
+
+    // サイズを設定
+    void SetSize(DirectX::XMFLOAT2 size);
 };
