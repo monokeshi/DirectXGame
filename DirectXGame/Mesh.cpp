@@ -48,7 +48,7 @@ void Mesh::CreateRectangle()
     // 頂点データ配列
     vertices =
     {
-        /*     X      Y    Z     法線       U    V     */
+        /*     X      Y    Z     法線       U     V     */
         {{ -5.0f, -5.0f, 0.0f }, { }, { 0.0f, 1.0f }},  // 左下
         {{ -5.0f,  5.0f, 0.0f }, { }, { 0.0f, 0.0f }},  // 左上
         {{  5.0f, -5.0f, 0.0f }, { }, { 1.0f, 1.0f }},  // 右下
@@ -69,7 +69,7 @@ void Mesh::CreateCube()
     // 頂点データ配列
     vertices =
     {
-        /*     X      Y     Z     法線        U    V     */
+        /*     X      Y     Z     法線       U     V     */
         // 前
         {{ -5.0f, -5.0f, -5.0f }, { }, { 0.0f, 1.0f }},  // 左下
         {{ -5.0f,  5.0f, -5.0f }, { }, { 0.0f, 0.0f }},  // 左上
@@ -176,7 +176,7 @@ void Mesh::CreateTriangularPyramid()
     // 頂点データ配列
     vertices =
     {
-        /*     X      Y      Z    法線        U    V     */
+        /*     X      Y      Z    法線       U     V     */
         // 底面
         {{ -5.0f, -5.0f,  5.0f }, { }, { 0.0f, 1.0f }},  // 左後ろ
         {{  5.0f, -5.0f,  5.0f }, { }, { 1.0f, 1.0f }},  // 右後ろ
@@ -329,7 +329,7 @@ void Mesh::CalcNormal()
     }
 }
 
-// 頂点バッファの転送
+// 頂点バッファへの転送
 HRESULT Mesh::TransferVertBuffer()
 {
     // GPU上のバッファに対応した仮想メモリを取得

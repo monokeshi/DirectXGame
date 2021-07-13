@@ -6,6 +6,7 @@
 #include <wrl.h>
 
 class DirectX12Wrapper;
+class Render;
 
 class Texture
 {
@@ -20,6 +21,7 @@ private:
     TextureInitialize texInit;
 
     DirectX12Wrapper &dx12;
+    Render &render;
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> basicDescHeap;
 
     // テクスチャ生成用
@@ -31,22 +33,26 @@ private:
     DirectX::TexMetadata metadata{};
     DirectX::ScratchImage scratchImg{};
 
-    ID3D12Resource *texBuff = nullptr;                  // テクスチャバッファ
-    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};          // 設定構造体
+    ID3D12Resource *texBuffObj3D = nullptr;         // オブジェクト用テクスチャバッファ
+    std::vector<ID3D12Resource *> texBuffSprite;    // スプライト用テクスチャバッファ
+    D3D12_SHADER_RESOURCE_VIEW_DESC srvDesc{};      // 設定構造体
 
-    int textureNum; // テクスチャ数
+    int obj3DTexturNum;     // オブジェクト用テクスチャ数
+    int spriteTextureNum;   // スプライト用テクスチャ数
 
     D3D12_CPU_DESCRIPTOR_HANDLE cpuDescHandleSRV{};
     D3D12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV{};
 
     // テクスチャバッファの生成
-    HRESULT CreateTextureBuffer();
+    HRESULT CreateTextureBufferObj3D();     // オブジェクト3D用
+    HRESULT CreateTextureBufferSprite();    // スプライト用
 
     // シェーダーリソースビューの生成
-    void CreateShaderResouceView();
+    void CreateShaderResouceViewObject3D(); // オブジェクト3D用
+    void CreateShaderResouceViewSprite();   // スプライト用
 
 public:
-    Texture(DirectX12Wrapper &dx12, ID3D12DescriptorHeap *basicDescHeap);
+    Texture(DirectX12Wrapper &dx12, Render &render, ID3D12DescriptorHeap *basicDescHeap);
     ~Texture();
 
     // テクスチャの生成
@@ -54,4 +60,7 @@ public:
 
     // テクスチャの読み込み
     D3D12_GPU_DESCRIPTOR_HANDLE LoadTexture(const wchar_t *fileName);
+
+    // スプライト用テクスチャの読み込み
+    int LoadSpriteTexture(const wchar_t *fileName);
 };

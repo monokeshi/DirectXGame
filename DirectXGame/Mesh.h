@@ -57,7 +57,7 @@ private:
     // 法線を計算する
     void CalcNormal();
 
-    // 頂点バッファの転送
+    // 頂点バッファへの転送
     HRESULT TransferVertBuffer();
 
 public:

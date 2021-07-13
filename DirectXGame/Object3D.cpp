@@ -15,13 +15,14 @@ using namespace DirectX;
 Object3D::Object3D(XMFLOAT3 position,
                    XMFLOAT3 scale,
                    XMFLOAT3 rotation,
+                   DirectX::XMFLOAT4 color,
                    XMMATRIX &matView,
                    XMMATRIX *matWorldParent,
                    DirectX12Wrapper &dx12,
                    Render &render,
                    int index,
                    bool isPerspective):
-    position(position), scale(scale), rotation(rotation), dx12(dx12), render(render), instanceNum(index)
+    position(position), scale(scale), rotation(rotation), color(color), dx12(dx12), render(render), instanceNum(index)
 {
     matrix = new Matrix(this->position, this->scale, this->rotation, matView, matWorldParent, isPerspective);
     ++instanceNum;
@@ -74,7 +75,7 @@ HRESULT Object3D::TransferConstBuffer()
     auto result = constBuffer->Map(0, nullptr, (void **)&constMap);
     assert(SUCCEEDED(result));
 
-    constMap->color = XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f);             // 色を指定
+    constMap->color = color;             // 色を指定
     constMap->mat = matrix->GetMat();
 
     // マッピング解除
@@ -103,7 +104,7 @@ void Object3D::Update()
     // 行列の更新処理
     matrix->Update();
 
-    // 定数バッファの転送
+    // 定数バッファへの転送
     if ( FAILED(TransferConstBuffer()) )
     {
         assert(0);
@@ -112,18 +113,18 @@ void Object3D::Update()
 }
 
 // 毎フレーム描画処理
-void Object3D::Draw(D3D12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV,
-                    D3D12_VERTEX_BUFFER_VIEW vbView,
-                    D3D12_INDEX_BUFFER_VIEW ibView,
+void Object3D::Draw(const D3D12_GPU_DESCRIPTOR_HANDLE &gpuDescHandleSRV,
+                    const D3D12_VERTEX_BUFFER_VIEW &vbView,
+                    const D3D12_INDEX_BUFFER_VIEW &ibView,
                     int indicesNum)
 {
     // プリミティブ形状の設定
     dx12.GetCmdList()->IASetPrimitiveTopology(D3D_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-    // 頂点バッファビューの設定
+    // 頂点バッファビューをセット
     dx12.GetCmdList()->IASetVertexBuffers(0, 1, &vbView);
 
-    // インデックスバッファビューの設定
+    // インデックスバッファビューをセット
     dx12.GetCmdList()->IASetIndexBuffer(&ibView);
 
     // デスクリプタヒープをセット
@@ -131,7 +132,7 @@ void Object3D::Draw(D3D12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV,
     dx12.GetCmdList()->SetDescriptorHeaps(_countof(ppHeaps), ppHeaps);
 
     // 定数バッファビューをセット
-    dx12.GetCmdList()->SetGraphicsRootDescriptorTable(0, gpuDescHandleCBV);
+    dx12.GetCmdList()->SetGraphicsRootConstantBufferView(0, constBuffer->GetGPUVirtualAddress());
 
     // シェーダーリソースビューをセット
     dx12.GetCmdList()->SetGraphicsRootDescriptorTable(1, gpuDescHandleSRV);

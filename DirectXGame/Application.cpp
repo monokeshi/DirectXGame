@@ -91,7 +91,7 @@ bool Application::Initialize()
     ShowWindow(hwnd, SW_SHOW);
 
     // オブジェクト
-    for ( int i = 0; i < 10; i++ )
+    for ( int i = 0; i < 10; ++i )
     {
         XMMATRIX *matWorldParent = nullptr;
         if ( i > 0 )
@@ -102,6 +102,7 @@ bool Application::Initialize()
         auto obj3d = new Object3D(XMFLOAT3(0.0f, 0.0f, 10.0f * i),  // position
                                   XMFLOAT3(1.0f, 1.0f, 1.0f),       // scale
                                   XMFLOAT3(0.0f, 0.0f, 0.0f),       // rotation
+                                  XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f), // color
                                   *camera->GetMatView(),
                                   matWorldParent,                   // 親オブジェクトのmatWorld 自身が親オブジェクトの場合はnull
                                   *dx12,
@@ -117,16 +118,37 @@ bool Application::Initialize()
         object3Ds.push_back(obj3d);
     }
 
-    // テクスチャ
-    texture = new Texture(*dx12, render->GetBasicDescHeap());
-    textureHandles.push_back(texture->CreateTexture(XMFLOAT4(1.0f, 0.5f, 0.0f, 1.0f)));     // テクスチャ生成
-    textureHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture01.png"));    // テクスチャ読み込み
-    textureHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture02.png"));    // テクスチャ読み込み
-    textureHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture03.png"));    // テクスチャ読み込み
-    textureHandles.push_back(texture->CreateTexture(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)));     // テクスチャ生成
-    textureHandles.push_back(texture->CreateTexture(XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f)));     // テクスチャ生成
-    textureHandles.push_back(texture->CreateTexture(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)));     // テクスチャ生成
+    // スプライト
+    for ( int i = 0; i < 1; ++i )
+    {
+        auto sp = new Sprite(XMFLOAT3(0.0f, 0.0f, 0.0f),        // position
+                             0.0f,                              // rotation
+                             XMFLOAT4(1.0f, 1.0f, 1.0f, 1.0f),  // color
+                             *dx12,
+                             *render);
+        if ( FAILED(sp->Initialize()) )
+        {
+            assert(0);
+            return false;
+        }
 
+        sprites.push_back(sp);
+    }
+
+    // テクスチャ
+    texture = new Texture(*dx12, *render, render->GetBasicDescHeap());
+
+    // オブジェクト3D用
+    texObj3DHandles.push_back(texture->CreateTexture(XMFLOAT4(1.0f, 0.5f, 0.0f, 1.0f)));    // テクスチャ生成
+    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture01.png"));   // テクスチャ読み込み
+    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture02.png"));   // テクスチャ読み込み
+    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture03.png"));   // テクスチャ読み込み
+    texObj3DHandles.push_back(texture->CreateTexture(XMFLOAT4(1.0f, 0.0f, 0.0f, 1.0f)));    // テクスチャ生成
+    texObj3DHandles.push_back(texture->CreateTexture(XMFLOAT4(0.0f, 1.0f, 0.0f, 1.0f)));    // テクスチャ生成
+    texObj3DHandles.push_back(texture->CreateTexture(XMFLOAT4(0.0f, 0.0f, 1.0f, 1.0f)));    // テクスチャ生成
+
+    // スプライト用
+    texSpriteHandles.push_back(texture->LoadSpriteTexture(L"Resources/Textures/texture01.png"));    // テクスチャ読み込み
 
     // メッシュ
     meshs.push_back(new Mesh(MeshList::e_RECTANGLE, *dx12));
@@ -154,7 +176,7 @@ void Application::Run()
     std::vector<int> texIndex;
     for ( int i = 0; i < object3Ds.size(); ++i )
     {
-        texIndex.push_back((rand() % (textureHandles.size() - 0)) + 0);
+        texIndex.push_back((rand() % (texObj3DHandles.size() - 0)) + 0);
     }
 
     // ゲームループ
@@ -189,6 +211,12 @@ void Application::Run()
         // カメラの更新処理
         camera->Update();
 
+        // スプライト
+        for ( int i = 0; i < sprites.size(); ++i )
+        {
+            sprites[i]->Update();
+        }
+
         // オブジェクト
         for ( int i = 0; i < object3Ds.size(); ++i )
         {
@@ -207,13 +235,18 @@ void Application::Run()
         // 描画準備
         dx12->BeginDraw();
 
-        // パイプラインステートやルートシグネチャの設定
-        render->BeginDraw();
+        // スプライト
+        render->BeginDrawSprite();
+        for ( int i = 0; i < sprites.size(); ++i )
+        {
+            sprites[i]->Draw(texSpriteHandles[0]);
+        }
 
         // オブジェクト
+        render->BeginDrawObj3D();
         for ( int i = 0; i < object3Ds.size(); ++i )
         {
-            object3Ds[i]->Draw(textureHandles[texIndex[i]],
+            object3Ds[i]->Draw(texObj3DHandles[texIndex[i]],
                                meshs[2]->GetVbView(),
                                meshs[2]->GetIbView(),
                                meshs[2]->GetIndicesNum());
@@ -237,6 +270,12 @@ void Application::Terminate()
 
 Application::~Application()
 {
+    for ( int i = static_cast<int>(sprites.size()) - 1; i >= 0; i-- )
+    {
+        delete sprites[i];
+        sprites.erase(sprites.begin() + i);
+    }
+
     for ( int i = static_cast<int>(object3Ds.size()) - 1; i >= 0; i-- )
     {
         delete object3Ds[i];

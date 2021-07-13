@@ -30,9 +30,10 @@ private:
 
     int instanceNum;        // 自身のクラスのインスタンス数
 
-    DirectX::XMFLOAT3 position;                                  // ポジション
-    DirectX::XMFLOAT3 scale;                                     // スケーリング倍率
-    DirectX::XMFLOAT3 rotation;                                  // 回転角
+    DirectX::XMFLOAT3 position;                         // ポジション
+    DirectX::XMFLOAT3 scale;                            // スケーリング倍率
+    DirectX::XMFLOAT3 rotation;                         // 回転角
+    DirectX::XMFLOAT4 color;                            // 色
     Microsoft::WRL::ComPtr<ID3D12Resource> constBuffer; // 定数バッファ
     CD3DX12_CPU_DESCRIPTOR_HANDLE cpuDescHandleCBV{};
     CD3DX12_GPU_DESCRIPTOR_HANDLE gpuDescHandleCBV{};
@@ -46,6 +47,7 @@ public:
     Object3D(DirectX::XMFLOAT3 position,
              DirectX::XMFLOAT3 scale,
              DirectX::XMFLOAT3 rotation,
+             DirectX::XMFLOAT4 color,
              DirectX::XMMATRIX &matView,
              DirectX::XMMATRIX *matWorldParent,
              DirectX12Wrapper &dx12,
@@ -61,9 +63,9 @@ public:
     void Update();
 
     // 毎フレーム描画処理
-    void Draw(D3D12_GPU_DESCRIPTOR_HANDLE gpuDescHandleSRV,
-              D3D12_VERTEX_BUFFER_VIEW vbView,
-              D3D12_INDEX_BUFFER_VIEW ibView,
+    void Draw(const D3D12_GPU_DESCRIPTOR_HANDLE &gpuDescHandleSRV,
+              const D3D12_VERTEX_BUFFER_VIEW &vbView,
+              const D3D12_INDEX_BUFFER_VIEW &ibView,
               int indicesNum);
 
     // 移動

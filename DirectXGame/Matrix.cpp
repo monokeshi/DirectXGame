@@ -41,7 +41,7 @@ void Matrix::CalcMatProjection(bool isPerspective)
         // 透視投影
         matProjection = XMMatrixPerspectiveFovLH(XMConvertToRadians(60.0f),                         // 上下画角60度
                                                  static_cast<float>(WINDOW_WIDTH) /
-                                                 static_cast<float>(WINDOW_HEIGHT), // アスペクト比
+                                                 static_cast<float>(WINDOW_HEIGHT),                 // アスペクト比
                                                  0.1f,                                              // 前端
                                                  1000.0f);                                          // 奥端
     }

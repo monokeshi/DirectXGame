@@ -1,6 +1,7 @@
 #include "Texture.h"
 #include "DirectX12Wrapper.h"
 #include "Define.h"
+#include "Render.h"
 
 #include <d3dx12.h>
 #pragma comment(lib, "d3d12.lib")
@@ -9,10 +10,11 @@
 
 using namespace DirectX;
 
-Texture::Texture(DirectX12Wrapper &dx12, ID3D12DescriptorHeap *basicDescHeap):
-    dx12(dx12), basicDescHeap(basicDescHeap)
+Texture::Texture(DirectX12Wrapper &dx12, Render &render, ID3D12DescriptorHeap *basicDescHeap):
+    dx12(dx12), render(render), basicDescHeap(basicDescHeap)
 {
-    textureNum = 0;
+    obj3DTexturNum = 0;
+    spriteTextureNum = 0;
 }
 
 Texture::~Texture()
@@ -20,8 +22,8 @@ Texture::~Texture()
 }
 
 
-// テクスチャバッファの生成
-HRESULT Texture::CreateTextureBuffer()
+// オブジェクト3D用テクスチャバッファの生成
+HRESULT Texture::CreateTextureBufferObj3D()
 {
     HRESULT result = S_FALSE;
     if ( texInit == TextureInitialize::e_CREATE )
@@ -40,15 +42,15 @@ HRESULT Texture::CreateTextureBuffer()
                                                            &texResDesc,
                                                            D3D12_RESOURCE_STATE_GENERIC_READ,  // テクスチャ用指定
                                                            nullptr,
-                                                           IID_PPV_ARGS(&texBuff));
+                                                           IID_PPV_ARGS(&texBuffObj3D));
         assert(SUCCEEDED(result));
 
         // テクスチャバッファにデータ転送
-        result = texBuff->WriteToSubresource(0,
-                                             nullptr,                               // 全領域へコピー
-                                             imageData,                             // 元データアドレス
-                                             sizeof(XMFLOAT4) * TEX_WIDTH,          // 1ラインサイズ
-                                             sizeof(XMFLOAT4) * IMAGE_DATA_COUNT);  // 全サイズ
+        result = texBuffObj3D->WriteToSubresource(0,
+                                                  nullptr,                               // 全領域へコピー
+                                                  imageData,                             // 元データアドレス
+                                                  sizeof(XMFLOAT4) * TEX_WIDTH,          // 1ラインサイズ
+                                                  sizeof(XMFLOAT4) * IMAGE_DATA_COUNT);  // 全サイズ
     }
     else if ( texInit == TextureInitialize::e_LOAD )
     {
@@ -68,22 +70,58 @@ HRESULT Texture::CreateTextureBuffer()
                                                            &texResDesc,
                                                            D3D12_RESOURCE_STATE_GENERIC_READ,  // テクスチャ用指定
                                                            nullptr,
-                                                           IID_PPV_ARGS(&texBuff));
+                                                           IID_PPV_ARGS(&texBuffObj3D));
         assert(SUCCEEDED(result));
 
         // テクスチャバッファにデータ転送
-        result = texBuff->WriteToSubresource(0,
-                                             nullptr,                              // 全領域へコピー
-                                             img->pixels,                          // 元データアドレス
-                                             static_cast<UINT>(img->rowPitch),     // 1ラインサイズ
-                                             static_cast<UINT>(img->slicePitch));  // 全サイズ
+        result = texBuffObj3D->WriteToSubresource(0,
+                                                  nullptr,                              // 全領域へコピー
+                                                  img->pixels,                          // 元データアドレス
+                                                  static_cast<UINT>(img->rowPitch),     // 1ラインサイズ
+                                                  static_cast<UINT>(img->slicePitch));  // 全サイズ
     }
 
     return result;
 }
 
+// スプライト用テクスチャバッファの生成
+HRESULT Texture::CreateTextureBufferSprite()
+{
+    const Image *img = scratchImg.GetImage(0, 0, 0);    // 生データ抽出
+
+       // リソース設定
+    CD3DX12_RESOURCE_DESC texResDesc = CD3DX12_RESOURCE_DESC::Tex2D(metadata.format,
+                                                                    metadata.width,
+                                                                    static_cast<UINT>(metadata.height),
+                                                                    static_cast<UINT16>(metadata.arraySize),
+                                                                    static_cast<UINT16>(metadata.mipLevels));
+
+    ID3D12Resource *tempBuff = nullptr;
+
+    // テクスチャバッファの生成
+    auto result = dx12.GetDevice()->CreateCommittedResource(&CD3DX12_HEAP_PROPERTIES(D3D12_CPU_PAGE_PROPERTY_WRITE_BACK,
+                                                                                     D3D12_MEMORY_POOL_L0),
+                                                            D3D12_HEAP_FLAG_NONE,
+                                                            &texResDesc,
+                                                            D3D12_RESOURCE_STATE_GENERIC_READ,  // テクスチャ用指定
+                                                            nullptr,
+                                                            IID_PPV_ARGS(&tempBuff));
+    assert(SUCCEEDED(result));
+
+    // テクスチャバッファにデータ転送
+    result = tempBuff->WriteToSubresource(0,
+                                          nullptr,                              // 全領域へコピー
+                                          img->pixels,                          // 元データアドレス
+                                          static_cast<UINT>(img->rowPitch),     // 1ラインサイズ
+                                          static_cast<UINT>(img->slicePitch));  // 全サイズ
+
+    texBuffSprite.push_back(tempBuff);
+
+    return result;
+}
+
 // シェーダーリソースビューの生成
-void Texture::CreateShaderResouceView()
+void Texture::CreateShaderResouceViewObject3D()
 {
     // デスクリプタヒープの先頭ハンドルを取得
     cpuDescHandleSRV = basicDescHeap->GetCPUDescriptorHandleForHeapStart();
@@ -91,12 +129,12 @@ void Texture::CreateShaderResouceView()
 
     // ハンドルのアドレスを進める
     UINT descHandleIncrementSize = dx12.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
-    cpuDescHandleSRV.ptr += (CONSTANT_BUFFER_NUM + textureNum) * descHandleIncrementSize;
-    gpuDescHandleSRV.ptr += (CONSTANT_BUFFER_NUM + textureNum) * descHandleIncrementSize;
+    cpuDescHandleSRV.ptr += (CONSTANT_BUFFER_NUM + obj3DTexturNum) * descHandleIncrementSize;
+    gpuDescHandleSRV.ptr += (CONSTANT_BUFFER_NUM + obj3DTexturNum) * descHandleIncrementSize;
 
-    ++textureNum;
+    ++obj3DTexturNum;
     // テクスチャ数がデスクリプタヒープで設定したテクスチャバッファ数を上回らない
-    if ( textureNum > TEXTURE_BUFFER_NUM )
+    if ( obj3DTexturNum > TEXTURE_BUFFER_NUM )
     {
         assert(0);
         return;
@@ -117,9 +155,26 @@ void Texture::CreateShaderResouceView()
     srvDesc.Texture2D.MipLevels = 1;
 
     // ヒープにシェーダーリソースビュー作成
-    dx12.GetDevice()->CreateShaderResourceView(texBuff,     // ビューと関連付けるバッファ
-                                               &srvDesc,    //テクスチャ設定情報
+    dx12.GetDevice()->CreateShaderResourceView(texBuffObj3D,    // ビューと関連付けるバッファ
+                                               &srvDesc,        //テクスチャ設定情報
                                                cpuDescHandleSRV);
+}
+
+// スプライト用シェーダーリソースビューの生成
+void Texture::CreateShaderResouceViewSprite()
+{
+    // シェーダーリソースビュー設定
+    srvDesc.Format = metadata.format;                       // RGBA
+    srvDesc.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
+    srvDesc.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;  // 2Dテクスチャ
+    srvDesc.Texture2D.MipLevels = 1;
+
+    // ヒープにシェーダーリソースビュー作成
+    dx12.GetDevice()->CreateShaderResourceView(texBuffSprite[spriteTextureNum], // ビューと関連付けるバッファ
+                                               &srvDesc,                        //テクスチャ設定情報
+                                               CD3DX12_CPU_DESCRIPTOR_HANDLE(render.GetSpriteDescHeap()->GetCPUDescriptorHandleForHeapStart(),
+                                                                             spriteTextureNum,
+                                                                             dx12.GetDevice()->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV)));
 }
 
 // テクスチャの生成
@@ -135,11 +190,11 @@ D3D12_GPU_DESCRIPTOR_HANDLE Texture::CreateTexture(XMFLOAT4 color)
     }
 
     // テクスチャバッファ
-    auto result = CreateTextureBuffer();
+    auto result = CreateTextureBufferObj3D();
     assert(SUCCEEDED(result));
 
     // シェーダーリソースビュー
-    CreateShaderResouceView();
+    CreateShaderResouceViewObject3D();
 
     delete[] imageData;
 
@@ -159,11 +214,35 @@ D3D12_GPU_DESCRIPTOR_HANDLE Texture::LoadTexture(const wchar_t *fileName)
     assert(SUCCEEDED(result));
 
     // テクスチャバッファの生成
-    result = CreateTextureBuffer();
+    result = CreateTextureBufferObj3D();
     assert(SUCCEEDED(result));
 
     // シェーダーリソースビュー
-    CreateShaderResouceView();
+    CreateShaderResouceViewObject3D();
 
     return gpuDescHandleSRV;
+}
+
+// スプライト用テクスチャの読み込み
+int Texture::LoadSpriteTexture(const wchar_t *fileName)
+{
+    texInit = TextureInitialize::e_LOAD;
+
+    // 読み込み
+    auto result = LoadFromWICFile(fileName, // 画像ファイル
+                                  WIC_FLAGS_NONE,
+                                  &metadata,
+                                  scratchImg);
+    assert(SUCCEEDED(result));
+
+    // テクスチャバッファの生成
+    result = CreateTextureBufferSprite();
+    assert(SUCCEEDED(result));
+
+    // シェーダーリソースビュー
+    CreateShaderResouceViewSprite();
+
+    ++spriteTextureNum;
+
+    return spriteTextureNum - 1;
 }

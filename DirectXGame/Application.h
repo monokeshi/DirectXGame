@@ -3,6 +3,7 @@
 #include "Texture.h"
 #include "Object3D.h"
 #include "Mesh.h"
+#include "Sprite.h"
 
 #include <memory>
 #include <vector>
@@ -24,11 +25,15 @@ private:
     // メッシュ
     std::vector<Mesh *> meshs;
 
+    // スプライト
+    std::vector<Sprite *> sprites;
+
     // テクスチャ
     Texture *texture;
 
     // テクスチャハンドル
-    std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> textureHandles;
+    std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> texObj3DHandles;   // オブジェクト3D用
+    std::vector<int> texSpriteHandles;                          // スプライト用
 
     // ここに必要な変数(バッファやヒープなど)を書く
     // ウィンドウ周り
