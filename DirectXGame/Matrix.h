@@ -47,7 +47,7 @@ public:
     void Update();
 
     // çsóÒÇÃçáê¨
-    DirectX::XMMATRIX GetMat()
+    const DirectX::XMMATRIX GetMat() const
     {
         return matWorld * matView * matProjection;
     }

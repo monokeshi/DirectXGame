@@ -68,13 +68,13 @@ public:
     // スプライト用テクスチャの読み込み
     int LoadSpriteTexture(const wchar_t *fileName);
 
-    DirectX::XMFLOAT2 GetObj3DTextureSize(const int &texIndex)
+    const DirectX::XMFLOAT2 &GetObj3DTextureSize(const int &texIndex) const
     {
         return { static_cast<float>(texResDescObj3D[texIndex].Width),
                  static_cast<float>(texResDescObj3D[texIndex].Height) };
     }
 
-    DirectX::XMFLOAT2 GetSpriteTextureSize(const int &texIndex)
+    const DirectX::XMFLOAT2 &GetSpriteTextureSize(const int &texIndex) const
     {
         return { static_cast<float>(texResDescSprite[texIndex].Width),
                  static_cast<float>(texResDescSprite[texIndex].Height) };

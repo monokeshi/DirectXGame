@@ -66,17 +66,17 @@ public:
 
     void Update();
 
-    D3D12_VERTEX_BUFFER_VIEW GetVbView()
+    const D3D12_VERTEX_BUFFER_VIEW GetVbView() const
     {
         return vbView;
     }
 
-    D3D12_INDEX_BUFFER_VIEW GetIbView()
+    const D3D12_INDEX_BUFFER_VIEW GetIbView() const
     {
         return ibView;
     }
 
-    int GetIndicesNum()
+    const int GetIndicesNum() const
     {
         return static_cast<int>(indices.size());
     }

@@ -29,17 +29,23 @@ private:
     Render &render;
     Texture &texture;
 
-    DirectX::XMFLOAT3 position; // 座標
-    float rotation;             // 回転
-    DirectX::XMMATRIX matWorld; // ワールド行列
-    DirectX::XMFLOAT4 color;    // 色
+    DirectX::XMFLOAT3 position;     // 座標
+    float rotation;                 // 回転
+    DirectX::XMMATRIX matWorld;     // ワールド行列
+    DirectX::XMFLOAT4 color;        // 色
+    DirectX::XMFLOAT2 anchorPoint;  // アンカーポイント
+    bool isFlipX;                   // 左右反転
+    bool isFlipY;                   // 上下反転
+
+    DirectX::XMMATRIX *matWorldParent;   // 親のワールド行列
 
     std::vector<Vertex> vertices;                       // 頂点データ
     Microsoft::WRL::ComPtr<ID3D12Resource> vertBuffer;  // 頂点バッファ
     D3D12_VERTEX_BUFFER_VIEW vbView{};                  // 頂点バッファビュー
     Microsoft::WRL::ComPtr<ID3D12Resource> constBuffer; // 定数バッファ
 
-    bool isSetTexResolutionOnlyOnce; // Draw関数呼び出し時にSetSize関数を一度だけ呼び出すためのフラグ
+    bool isSetTexResolutionOnlyOnce;    // Draw関数呼び出し時にSetSize関数を一度だけ呼び出すためのフラグ
+    //bool dirtyFlag;                     // 定数バッファ用の項目で変更があった場合のみtrue
 
     // 行列の更新処理
     void UpdateMatrix();
@@ -63,6 +69,7 @@ public:
     Sprite(DirectX::XMFLOAT3 position,
            float rotation,
            DirectX::XMFLOAT4 color,
+           DirectX::XMMATRIX *matWorldParent,
            DirectX12Wrapper &dx12,
            Render &render,
            Texture &texture);
@@ -75,8 +82,13 @@ public:
     void Update();
 
     // 描画処理
-    void Draw(const int &texIndex, bool isSetTexResolution = true);
+    void Draw(const int &texIndex, bool isFlipX = false, bool isFlipY = false, bool isInvisible = false, bool isSetTexResolution = true);
 
     // サイズを設定
     void SetSize(DirectX::XMFLOAT2 size);
+
+    DirectX::XMMATRIX *GetMatWorld()
+    {
+        return &matWorld;
+    }
 };

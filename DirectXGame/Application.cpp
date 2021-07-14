@@ -72,7 +72,7 @@ Application &Application::GetInstance()
 // 初期化
 bool Application::Initialize()
 {
-    /*--------------------システムや描画--------------------*/
+    /*-------------------システムや描画-------------------*/
     // シード値設定
     srand(static_cast<unsigned int>(time(NULL)));
 
@@ -91,7 +91,7 @@ bool Application::Initialize()
     // ウィンドウ表示
     ShowWindow(hwnd, SW_SHOW);
 
-    /*--------------------テクスチャ--------------------*/
+    /*-------------------テクスチャ-------------------*/
     texture = new Texture(*dx12, *render, render->GetBasicDescHeap());
 
     // オブジェクト3D用
@@ -108,12 +108,12 @@ bool Application::Initialize()
     texSpriteHandles.push_back(texture->LoadSpriteTexture(L"Resources/Textures/texture02.png"));    // テクスチャ読み込み
     texSpriteHandles.push_back(texture->LoadSpriteTexture(L"Resources/Textures/texture03.png"));    // テクスチャ読み込み
 
-    /*--------------------メッシュ--------------------*/
+    /*-------------------メッシュ-------------------*/
     meshs.push_back(new Mesh(MeshList::e_RECTANGLE, *dx12));
     meshs.push_back(new Mesh(MeshList::e_CUBE, *dx12));
     meshs.push_back(new Mesh(MeshList::e_TRIANGULAR_PYRAMID, *dx12));
 
-    /*--------------------オブジェクト--------------------*/
+    /*-------------------オブジェクト-------------------*/
     for ( int i = 0; i < 10; ++i )
     {
         XMMATRIX *matWorldParent = nullptr;
@@ -141,12 +141,13 @@ bool Application::Initialize()
         object3Ds.push_back(obj3d);
     }
 
-    /*--------------------スプライト--------------------*/
+    /*-------------------スプライト-------------------*/
     for ( int i = 0; i < 1; ++i )
     {
-        auto sp = new Sprite({ WINDOW_WIDTH / 2.0f, 0.0f + i * 50, 0.0f },  // position
-                             0.0f,                                          // rotation
-                             { 1.0f, 1.0f, 1.0f, 1.0f },                    // color
+        auto sp = new Sprite({ WINDOW_WIDTH / 2.0f, 100.0f + i * 50, 0.0f },    // position
+                             0.0f,                                              // rotation
+                             { 1.0f, 1.0f, 1.0f, 1.0f },                        // color
+                             nullptr,
                              *dx12,
                              *render,
                              *texture);

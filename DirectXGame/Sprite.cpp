@@ -12,12 +12,17 @@ Sprite::Sprite(
     DirectX::XMFLOAT3 position,
     float rotation,
     DirectX::XMFLOAT4 color,
+    DirectX::XMMATRIX *matWorldParent,
     DirectX12Wrapper &dx12,
     Render &render,
     Texture &texture):
-    position(position), rotation(rotation), color(color), dx12(dx12), render(render), texture(texture)
+    position(position), rotation(rotation), color(color), matWorld(matWorld), dx12(dx12), render(render), texture(texture)
 {
+    anchorPoint = { 0.5f,0.5f };
+    isFlipX = false;
+    isFlipY = false;
     isSetTexResolutionOnlyOnce = true;
+    //dirtyFlag = false;
 
     UpdateMatrix();
 }
@@ -32,6 +37,13 @@ void Sprite::UpdateMatrix()
     matWorld = XMMatrixIdentity();                                          // 単位行列
     matWorld *= XMMatrixRotationZ(XMConvertToRadians(rotation));            // Z軸回転
     matWorld *= XMMatrixTranslation(position.x, position.y, position.z);    // 平行移動
+
+    // 親ワールド行列がnullではない このオブジェクトは子となる
+    if ( matWorldParent != nullptr )
+    {
+        // 親オブジェクトのワールド行列をかける
+        matWorld *= (*matWorldParent);
+    }
 }
 
 // 頂点生成
@@ -39,11 +51,11 @@ void Sprite::CreateVertex()
 {
     vertices =
     {
-        /*         U     V         */
-        {{ }, { 0.0f, 1.0f }},  // 左下
-        {{ }, { 0.0f, 0.0f }},  // 左上
-        {{ }, { 1.0f, 1.0f }},  // 右下
-        {{ }, { 1.0f, 0.0f }},  // 右上
+        /*      X       Y     Z         U     V      */
+        {{   0.0f, 100.0f, 0.0f }, { 0.0f, 1.0f }},  // 左下
+        {{   0.0f,   0.0f, 0.0f }, { 0.0f, 0.0f }},  // 左上
+        {{ 100.0f, 100.0f, 0.0f }, { 1.0f, 1.0f }},  // 右下
+        {{ 100.0f,   0.0f, 0.0f }, { 1.0f, 0.0f }},  // 右上
     };
 
     //enum
@@ -178,12 +190,20 @@ HRESULT Sprite::Initialize()
     result = TransferConstBuffer();
     assert(SUCCEEDED(result));
 
+    // サイズをセットしておく
+    SetSize({ 100.0f,100.0f });
+
     return result;
 }
 
 // 更新処理
 void Sprite::Update()
 {
+    /*if ( !dirtyFlag )
+    {
+        return;
+    }*/
+
     // 行列の更新
     UpdateMatrix();
 
@@ -196,8 +216,16 @@ void Sprite::Update()
 }
 
 // 描画処理
-void Sprite::Draw(const int &texIndex, bool isSetTexResolution)
+void Sprite::Draw(const int &texIndex, bool isFlipX, bool isFlipY, bool isInvisible, bool isSetTexResolution)
 {
+    if ( isInvisible )
+    {
+        return;
+    }
+
+    this->isFlipX = isFlipX;
+    this->isFlipY = isFlipY;
+
     // ポリゴンサイズをテクスチャ画像の解像度に設定(一度だけ)
     if ( isSetTexResolution &&
         isSetTexResolutionOnlyOnce )
@@ -233,10 +261,27 @@ void Sprite::SetSize(DirectX::XMFLOAT2 size)
         RT  // 右上
     };
 
-    vertices[LB].pos = { 0.0f, size.y, 0.0f };      // 左下
-    vertices[LT].pos = { 0.0f,   0.0f, 0.0f };      // 左上
-    vertices[RB].pos = { size.x, size.y, 0.0f };    // 右下
-    vertices[RT].pos = { size.x,   0.0f, 0.0f };    // 右上
+    float left = (0.0f - anchorPoint.x) * size.x;
+    float right = (1.0f - anchorPoint.x) * size.x;
+    float top = (0.0f - anchorPoint.y) * size.y;
+    float bottom = (1.0f - anchorPoint.y) * size.y;
+
+    if ( isFlipX )
+    {
+        left *= -1;
+        right *= -1;
+    }
+
+    if ( isFlipY )
+    {
+        top *= -1;
+        bottom *= -1;
+    }
+
+    vertices[LB].pos = { left, bottom, 0.0f };  // 左下
+    vertices[LT].pos = { left,    top, 0.0f };  // 左上
+    vertices[RB].pos = { right, bottom, 0.0f }; // 右下
+    vertices[RT].pos = { right,   top, 0.0f };  // 右上
 
     // 頂点バッファへのデータ転送
     if ( FAILED(TransferVertBuffer()) )
