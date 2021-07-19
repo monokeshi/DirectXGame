@@ -1,5 +1,6 @@
 #include "InputKey.h"
 
+#include <string.h>
 #include <assert.h>
 
 InputKey::InputKey()

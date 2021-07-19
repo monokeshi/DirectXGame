@@ -3,8 +3,6 @@
 #include "Define.h"
 
 #include <d3dcompiler.h>
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "d3dcompiler.lib")
 
 #include <string>
 #include <assert.h>

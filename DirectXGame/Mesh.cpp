@@ -2,8 +2,6 @@
 #include "DirectX12Wrapper.h"
 #include "Define.h"
 
-#pragma comment(lib, "d3d12.lib")
-
 using namespace DirectX;
 
 Mesh::Mesh(MeshList shapeList, DirectX12Wrapper &dx12):

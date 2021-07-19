@@ -4,6 +4,7 @@
 #include "Object3D.h"
 #include "Mesh.h"
 #include "Sprite.h"
+#include "DebugText.h"
 
 #include <memory>
 #include <vector>
@@ -34,6 +35,10 @@ private:
     // テクスチャハンドル
     std::vector<D3D12_GPU_DESCRIPTOR_HANDLE> texObj3DHandles;   // オブジェクト3D用
     std::vector<int> texSpriteHandles;                          // スプライト用
+    int texDebugTextHandle;                                     // デバッグテキスト用
+
+    // デバッグテキスト
+    DebugText debugText;
 
     // ここに必要な変数(バッファやヒープなど)を書く
     // ウィンドウ周り

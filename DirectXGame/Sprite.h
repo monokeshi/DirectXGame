@@ -25,6 +25,14 @@ private:
         DirectX::XMMATRIX mat;   // 3D変換行列
     };
 
+    enum
+    {
+        LB, // 左下
+        LT, // 左上
+        RB, // 右下
+        RT  // 右上
+    };
+
     DirectX12Wrapper &dx12;
     Render &render;
     Texture &texture;
@@ -33,7 +41,10 @@ private:
     float rotation;                 // 回転
     DirectX::XMMATRIX matWorld;     // ワールド行列
     DirectX::XMFLOAT4 color;        // 色
+    DirectX::XMFLOAT2 size;         // サイズ
     DirectX::XMFLOAT2 anchorPoint;  // アンカーポイント
+    //DirectX::XMFLOAT2 texLeftTop;   // テクスチャ左上座標
+    //DirectX::XMFLOAT2 texSize;      // テクスチャ切り出しサイズ
     bool isFlipX;                   // 左右反転
     bool isFlipY;                   // 上下反転
 
@@ -65,10 +76,17 @@ private:
     // 定数バッファへのデータ転送
     HRESULT TransferConstBuffer();
 
+    // 頂点座標を計算
+    void CalcVertPos();
+
+    // 切り抜き後の頂点UV座標を計算
+    void CalcClippingVertUV(DirectX::XMFLOAT2 texLeftTop, DirectX::XMFLOAT2 texSize, const int &texIndex);
+
 public:
     Sprite(DirectX::XMFLOAT3 position,
            float rotation,
            DirectX::XMFLOAT4 color,
+           DirectX::XMFLOAT2 size,
            DirectX::XMMATRIX *matWorldParent,
            DirectX12Wrapper &dx12,
            Render &render,
@@ -78,14 +96,34 @@ public:
     // 初期化処理
     HRESULT Initialize();
 
+    // テクスチャを切り出す
+    void ClippingTexture(DirectX::XMFLOAT2 texLeftTop, DirectX::XMFLOAT2 texSize, const int &texIndex);
+
     // 更新処理
     void Update();
 
     // 描画処理
     void Draw(const int &texIndex, bool isFlipX = false, bool isFlipY = false, bool isInvisible = false, bool isSetTexResolution = true);
 
+    // 座標を設定
+    void SetPosition(DirectX::XMFLOAT3 position)
+    {
+        this->position = position;
+    }
+
     // サイズを設定
-    void SetSize(DirectX::XMFLOAT2 size);
+    void SetSize(DirectX::XMFLOAT2 size)
+    {
+        this->size = size;
+        CalcVertPos();
+
+        // 頂点バッファへのデータ転送
+        if ( FAILED(TransferVertBuffer()) )
+        {
+            assert(0);
+            return;
+        }
+    }
 
     DirectX::XMMATRIX *GetMatWorld()
     {

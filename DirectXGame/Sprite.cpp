@@ -12,15 +12,15 @@ Sprite::Sprite(
     DirectX::XMFLOAT3 position,
     float rotation,
     DirectX::XMFLOAT4 color,
+    DirectX::XMFLOAT2 size,
     DirectX::XMMATRIX *matWorldParent,
     DirectX12Wrapper &dx12,
     Render &render,
     Texture &texture):
-    position(position), rotation(rotation), color(color), matWorld(matWorld), dx12(dx12), render(render), texture(texture)
+    position(position), rotation(rotation), color(color), size(size), matWorld(matWorld), dx12(dx12), render(render), texture(texture)
 {
     anchorPoint = { 0.5f,0.5f };
-    isFlipX = false;
-    isFlipY = false;
+    isFlipX = isFlipY = false;
     isSetTexResolutionOnlyOnce = true;
     //dirtyFlag = false;
 
@@ -168,6 +168,46 @@ HRESULT Sprite::TransferConstBuffer()
     return result;
 }
 
+// 頂点座標を計算
+void Sprite::CalcVertPos()
+{
+    float left = (0.0f - anchorPoint.x) * size.x;;
+    float right = (1.0f - anchorPoint.x) * size.x;
+    float top = (0.0f - anchorPoint.y) * size.y;
+    float bottom = (1.0f - anchorPoint.y) * size.y;
+
+    if ( isFlipX )
+    {
+        left *= -1;
+        right *= -1;
+    }
+    if ( isFlipY )
+    {
+        top *= -1;
+        bottom *= -1;
+    }
+
+    vertices[LB].pos = { left, bottom, 0.0f };  // 左下
+    vertices[LT].pos = { left,    top, 0.0f };  // 左上
+    vertices[RB].pos = { right, bottom, 0.0f }; // 右下
+    vertices[RT].pos = { right,   top, 0.0f };  // 右上
+}
+
+// 頂点UV座標を計算
+void Sprite::CalcClippingVertUV(XMFLOAT2 texLeftTop, XMFLOAT2 texSize, const int &texIndex)
+{
+    XMFLOAT2 size = texture.GetSpriteTextureSize(texIndex);
+    float texLeft = texLeftTop.x / size.x;
+    float texRight = (texLeftTop.x + texSize.x) / size.x;
+    float texTop = texLeftTop.y / size.y;
+    float texBottom = (texLeftTop.y + texSize.y) / size.y;
+
+    vertices[LB].uv = { texLeft,  texBottom };   // 左下
+    vertices[LT].uv = { texLeft,     texTop };   // 左上
+    vertices[RB].uv = { texRight, texBottom };   // 右下
+    vertices[RT].uv = { texRight,    texTop };   // 右上
+}
+
 // 初期化処理
 HRESULT Sprite::Initialize()
 {
@@ -190,10 +230,20 @@ HRESULT Sprite::Initialize()
     result = TransferConstBuffer();
     assert(SUCCEEDED(result));
 
-    // サイズをセットしておく
-    SetSize({ 100.0f,100.0f });
-
     return result;
+}
+
+// テクスチャを切り出す
+void Sprite::ClippingTexture(XMFLOAT2 texLeftTop, XMFLOAT2 texSize, const int &texIndex)
+{
+    CalcClippingVertUV(texLeftTop, texSize, texIndex);
+
+    // 頂点バッファへのデータ転送
+    if ( FAILED(TransferVertBuffer()) )
+    {
+        assert(0);
+        return;
+    }
 }
 
 // 更新処理
@@ -223,15 +273,27 @@ void Sprite::Draw(const int &texIndex, bool isFlipX, bool isFlipY, bool isInvisi
         return;
     }
 
-    this->isFlipX = isFlipX;
-    this->isFlipY = isFlipY;
-
     // ポリゴンサイズをテクスチャ画像の解像度に設定(一度だけ)
     if ( isSetTexResolution &&
         isSetTexResolutionOnlyOnce )
     {
         SetSize(texture.GetSpriteTextureSize(texIndex));
         isSetTexResolutionOnlyOnce = false;
+    }
+
+    // 反転
+    if ( this->isFlipX != isFlipX || this->isFlipY != isFlipY )
+    {
+        this->isFlipX = isFlipX;
+        this->isFlipY = isFlipY;
+        CalcVertPos();
+
+        // 定数バッファへの転送
+        if ( FAILED(TransferVertBuffer()) )
+        {
+            assert(0);
+            return;
+        }
     }
 
     // 頂点バッファビューをセット
@@ -250,43 +312,26 @@ void Sprite::Draw(const int &texIndex, bool isFlipX, bool isFlipY, bool isInvisi
     dx12.GetCmdList()->DrawInstanced(4, 1, 0, 0);
 }
 
-// サイズを設定
-void Sprite::SetSize(DirectX::XMFLOAT2 size)
-{
-    enum
-    {
-        LB, // 左下
-        LT, // 左上
-        RB, // 右下
-        RT  // 右上
-    };
-
-    float left = (0.0f - anchorPoint.x) * size.x;
-    float right = (1.0f - anchorPoint.x) * size.x;
-    float top = (0.0f - anchorPoint.y) * size.y;
-    float bottom = (1.0f - anchorPoint.y) * size.y;
-
-    if ( isFlipX )
-    {
-        left *= -1;
-        right *= -1;
-    }
-
-    if ( isFlipY )
-    {
-        top *= -1;
-        bottom *= -1;
-    }
-
-    vertices[LB].pos = { left, bottom, 0.0f };  // 左下
-    vertices[LT].pos = { left,    top, 0.0f };  // 左上
-    vertices[RB].pos = { right, bottom, 0.0f }; // 右下
-    vertices[RT].pos = { right,   top, 0.0f };  // 右上
-
-    // 頂点バッファへのデータ転送
-    if ( FAILED(TransferVertBuffer()) )
-    {
-        assert(0);
-        return;
-    }
-}
+//// サイズを設定
+//void Sprite::SetSize(XMFLOAT2 size)
+//{
+//    // ポリゴンサイズをテクスチャ画像の解像度に設定フラグをfalse
+//    isSetTexResolutionOnlyOnce = false;
+//
+//    float left = (0.0f - anchorPoint.x) * size.x;
+//    float right = (1.0f - anchorPoint.x) * size.x;
+//    float top = (0.0f - anchorPoint.y) * size.y;
+//    float bottom = (1.0f - anchorPoint.y) * size.y;
+//
+//    vertices[LB].pos = { left, bottom, 0.0f };  // 左下
+//    vertices[LT].pos = { left,    top, 0.0f };  // 左上
+//    vertices[RB].pos = { right, bottom, 0.0f }; // 右下
+//    vertices[RT].pos = { right,   top, 0.0f };  // 右上
+//
+//    // 頂点バッファへのデータ転送
+//    if ( FAILED(TransferVertBuffer()) )
+//    {
+//        assert(0);
+//        return;
+//    }
+//}

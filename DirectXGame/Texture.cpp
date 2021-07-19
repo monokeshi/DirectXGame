@@ -3,8 +3,6 @@
 #include "Define.h"
 #include "Render.h"
 
-#pragma comment(lib, "d3d12.lib")
-
 #include <assert.h>
 
 using namespace DirectX;

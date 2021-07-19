@@ -4,10 +4,6 @@
 
 #include <d3d12.h>
 #include <d3dx12.h>
-#pragma comment(lib, "d3d12.lib")
-#pragma comment(lib, "dxgi.lib")
-#pragma comment(lib, "dxguid.lib")
-#pragma comment(lib, "dinput8.lib")
 
 #include <assert.h>
 #include <vector>
@@ -78,6 +74,10 @@ DirectX12Wrapper::DirectX12Wrapper(WNDCLASSEX w, HWND hwnd)
         assert(0);
         return;
     }
+
+    // ‰æ–Ê“h‚è‚Â‚Ô‚µF
+    float color[] = { 0.0f, 0.0f, 0.0f, 1.0f };
+    memcpy(clearColor, color, sizeof(clearColor));
 }
 
 DirectX12Wrapper::~DirectX12Wrapper()
@@ -339,8 +339,6 @@ void DirectX12Wrapper::BeginDraw()
     cmdList->OMSetRenderTargets(1, &rtvH, false, &dsvH);
 
     // ‰æ–ÊƒNƒŠƒA
-    /*                       R      G     B     A                       */
-    float clearColor[] = { 0.9f, 0.5f, 0.5f, 0.0f };
     cmdList->ClearRenderTargetView(rtvH, clearColor, 0, nullptr);
     cmdList->ClearDepthStencilView(dsvH, D3D12_CLEAR_FLAG_DEPTH, 1.0f, 0, 0, nullptr);
 

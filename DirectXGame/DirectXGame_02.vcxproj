@@ -144,6 +144,7 @@
   <ItemGroup>
     <ClCompile Include="Application.cpp" />
     <ClCompile Include="Camera.cpp" />
+    <ClCompile Include="DebugText.cpp" />
     <ClCompile Include="Define.cpp" />
     <ClCompile Include="DirectX12Wrapper.cpp" />
     <ClCompile Include="InputKey.cpp" />
@@ -159,6 +160,7 @@
   <ItemGroup>
     <ClInclude Include="Application.h" />
     <ClInclude Include="Camera.h" />
+    <ClInclude Include="DebugText.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="DirectX12Wrapper.h" />
     <ClInclude Include="InputKey.h" />

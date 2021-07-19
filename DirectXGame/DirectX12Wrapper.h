@@ -35,6 +35,10 @@ private:
     ComPtr<ID3D12Fence> fence;
     UINT64 fenceVal = 0;
 
+    // 画面塗りつぶし色
+    static const int RGBA = 4;
+    float clearColor[RGBA];
+
     // 入力デバイス
     IDirectInputDevice8 *devkeyboard = nullptr;
 
@@ -67,6 +71,12 @@ public:
     void FlushGPU();    // GPUの処理が終わるのを待つ
     void BeginDraw();   // 描画準備
     void EndDraw();     // 描画後処理
+
+    void SetClearColor(float r, float g, float b, float a)
+    {
+        float color[] = { r, g, b, a };
+        memcpy(clearColor, color, sizeof(clearColor));
+    }
 
     ID3D12Device *GetDevice()
     {

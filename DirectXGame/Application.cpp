@@ -81,6 +81,7 @@ bool Application::Initialize()
 
     // DirectX12生成&初期化
     dx12.reset(new DirectX12Wrapper(w, hwnd));
+    dx12->SetClearColor(0.0f, 0.25f, 0.5f, 1.0f);
 
     // Render生成&初期化
     render.reset(new Render(*dx12));
@@ -107,6 +108,9 @@ bool Application::Initialize()
     texSpriteHandles.push_back(texture->LoadSpriteTexture(L"Resources/Textures/texture01.png"));    // テクスチャ読み込み
     texSpriteHandles.push_back(texture->LoadSpriteTexture(L"Resources/Textures/texture02.png"));    // テクスチャ読み込み
     texSpriteHandles.push_back(texture->LoadSpriteTexture(L"Resources/Textures/texture03.png"));    // テクスチャ読み込み
+
+    // デバッグテキスト用
+    texDebugTextHandle = texture->LoadSpriteTexture(L"Resources/Textures/debug_font.png");
 
     /*-------------------メッシュ-------------------*/
     meshs.push_back(new Mesh(MeshList::e_RECTANGLE, *dx12));
@@ -144,9 +148,10 @@ bool Application::Initialize()
     /*-------------------スプライト-------------------*/
     for ( int i = 0; i < 1; ++i )
     {
-        auto sp = new Sprite({ WINDOW_WIDTH / 2.0f, 100.0f + i * 50, 0.0f },    // position
+        auto sp = new Sprite({ WINDOW_WIDTH / 2.0f, WINDOW_HEIGHT / 2.0f - 100 + i * 50, 0.0f },    // position
                              0.0f,                                              // rotation
                              { 1.0f, 1.0f, 1.0f, 1.0f },                        // color
+                             { 100.0f, 100.0f },                                // size
                              nullptr,
                              *dx12,
                              *render,
@@ -159,6 +164,9 @@ bool Application::Initialize()
 
         sprites.push_back(sp);
     }
+
+    /*-------------------デバッグテキスト-------------------*/
+    debugText.Initialize(texDebugTextHandle, *dx12, *render, *texture);
 
     return true;
 }
@@ -254,8 +262,13 @@ void Application::Run()
         render->BeginDrawSprite();
         for ( int i = 0; i < sprites.size(); ++i )
         {
-            sprites[i]->Draw(texSpriteHandles[0]);
+            sprites[i]->Draw(texDebugTextHandle);
         }
+
+        // デバッグテキスト
+        debugText.Print(200, 300, "Hello World!", 2.0f);
+        debugText.Print(200, 500, "0.123329", 1.5f);
+        debugText.DrawAll();
 
         // 描画後処理
         dx12->EndDraw();

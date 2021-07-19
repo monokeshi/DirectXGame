@@ -5,7 +5,6 @@
 #include "Camera.h"
 
 #include <dinput.h>
-#pragma comment(lib, "dinput8.lib")
 
 using namespace DirectX;
 
