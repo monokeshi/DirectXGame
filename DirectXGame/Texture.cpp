@@ -18,7 +18,6 @@ Texture::~Texture()
 {
 }
 
-
 // オブジェクト3D用テクスチャバッファの生成
 HRESULT Texture::CreateTextureBufferObj3D()
 {

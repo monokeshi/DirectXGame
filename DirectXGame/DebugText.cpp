@@ -4,6 +4,8 @@
 #include "Texture.h"
 #include "Define.h"
 
+#include <stdarg.h>
+
 void DebugText::Initialize(const int &texIndex, DirectX12Wrapper &dx12, Render &render, Texture &texture)
 {
     this->texIndex = texIndex;
@@ -25,7 +27,7 @@ void DebugText::Initialize(const int &texIndex, DirectX12Wrapper &dx12, Render &
     }
 }
 
-void DebugText::Print(float x, float y, const std::string &text, float scale)
+void DebugText::Print(float x, float y, float scale, const std::string &text)
 {
     for ( int i = 0; i < text.size(); ++i )
     {
@@ -61,6 +63,11 @@ void DebugText::Print(float x, float y, const std::string &text, float scale)
         // •¶Žš‚ðˆê‚Âi‚ß‚é
         ++spriteIndex;
     }
+}
+
+void DebugText::PrintFormat(float x, float y, float scale, const std::string &text, ...)
+{
+    va_list vvv;
 }
 
 // ‚Ü‚Æ‚ß‚Ä•`‰æ

@@ -28,7 +28,9 @@ public:
     void Initialize(const int &texIndex, DirectX12Wrapper &dx12, Render &render, Texture &texture);
 
     // ‰æ–Ê‚É•`‰æ‚µ‚½‚¢•¶š—ñ‚ğ1s•ª’Ç‰Á
-    void Print(float x, float y, const std::string &text, float scale = 1.0f);
+    void Print(float x, float y, float scale, const std::string &text);
+
+    void PrintFormat(float x, float y, float scale, const std::string &text, ...);
 
     // ‚Ü‚Æ‚ß‚Ä•`‰æ
     void DrawAll();

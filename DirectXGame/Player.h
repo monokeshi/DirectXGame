@@ -4,7 +4,7 @@ class Object3D;
 class InputKey;
 class Camera;
 
-class PlayerController
+class Player
 {
 private:
     Object3D &object3D;
@@ -18,11 +18,12 @@ private:
 
     // ƒJƒƒ‰‚Ì‰ñ“]
     void RotateCamera();
+
 public:
-    PlayerController(Object3D &object3D,
+    Player(Object3D &object3D,
                      InputKey &ik,
                      Camera &camera);
-    ~PlayerController();
+    ~Player();
 
     // XVˆ—
     void Update();

@@ -43,6 +43,7 @@ private:
 
     // 定数バッファへのデータ転送
     HRESULT TransferConstBuffer();
+
 public:
     Object3D(DirectX::XMFLOAT3 position,
              DirectX::XMFLOAT3 scale,

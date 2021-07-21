@@ -26,8 +26,8 @@ private:
     Microsoft::WRL::ComPtr<ID3D12DescriptorHeap> basicDescHeap;
 
     // テクスチャ生成用
-    const int TEX_WIDTH = 256;                          // 横ピクセル数
-    const int IMAGE_DATA_COUNT = TEX_WIDTH * TEX_WIDTH; // 配列要素数
+    static const int TEX_WIDTH = 256;                          // 横ピクセル数
+    static const int IMAGE_DATA_COUNT = TEX_WIDTH * TEX_WIDTH; // 配列要素数
     DirectX::XMFLOAT4 *imageData;
 
     // テクスチャ読み込み用

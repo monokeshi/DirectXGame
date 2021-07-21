@@ -29,7 +29,9 @@ private:
     CD3DX12_DESCRIPTOR_RANGE descRangeCBV{};                    // デスクリプタレンジ 定数用
     CD3DX12_DESCRIPTOR_RANGE descRangeSRV{};                    // デスクリプタレンジ テクスチャ用
     CD3DX12_ROOT_PARAMETER rootParams[2]{};                     // ルートパラメータ
-    D3D12_STATIC_SAMPLER_DESC samplerDesc{};                    // テクスチャサンプラー
+
+    D3D12_STATIC_SAMPLER_DESC obj3DSamplerDesc{};               // オブジェクト3D用テクスチャサンプラー
+    D3D12_STATIC_SAMPLER_DESC spriteSamplerDesc{};              // スプライト用テクスチャサンプラー
 
     // シェーダーまわり
     ComPtr<ID3DBlob> vsBlob = nullptr;    // 頂点シェーダオブジェクト
@@ -46,7 +48,8 @@ private:
     void SettingRootParameter();
 
     // テクスチャサンプラーの設定
-    void SettingTextureSampler();
+    void SettingTextureSamplerObject3D();   // オブジェクト3D用
+    void SettingTextureSamplerSprite();     // スプライト用
 
     // ルートシグネチャ生成
     HRESULT CreateRootSignatureObject3D();  // オブジェクト3D用

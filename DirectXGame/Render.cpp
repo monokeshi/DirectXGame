@@ -22,7 +22,8 @@ Render::Render(DirectX12Wrapper &dx12):
     SettingRootParameter();
 
     // テクスチャサンプラー
-    SettingTextureSampler();
+    SettingTextureSamplerObject3D();
+    SettingTextureSamplerSprite();
 
     // ルートシグネチャ
     result = CreateRootSignatureObject3D();
@@ -89,17 +90,24 @@ void Render::SettingRootParameter()
     rootParams[1].InitAsDescriptorTable(1, &descRangeSRV);
 }
 
-// テクスチャサンプラーの設定
-void Render::SettingTextureSampler()
+//オブジェクト用テクスチャサンプラーの設定
+void Render::SettingTextureSamplerObject3D()
 {
-    samplerDesc = CD3DX12_STATIC_SAMPLER_DESC(0);
+    obj3DSamplerDesc = CD3DX12_STATIC_SAMPLER_DESC(0);
+}
+
+// スプライト用テクスチャサンプラーの設定
+void Render::SettingTextureSamplerSprite()
+{
+    spriteSamplerDesc = CD3DX12_STATIC_SAMPLER_DESC(0);
+    spriteSamplerDesc.Filter = D3D12_FILTER_MIN_MAG_MIP_POINT;
 }
 
 // ルートシグネチャ生成
 HRESULT Render::CreateRootSignatureObject3D()
 {
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
-    rootSignatureDesc.Init_1_0(_countof(rootParams), rootParams, 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+    rootSignatureDesc.Init_1_0(_countof(rootParams), rootParams, 1, &obj3DSamplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
     ComPtr<ID3DBlob> rootSigBlob;
     auto result = D3DX12SerializeVersionedRootSignature(&rootSignatureDesc,
@@ -122,7 +130,7 @@ HRESULT Render::CreateRootSignatureObject3D()
 HRESULT Render::CreateRootSignatureSprite()
 {
     CD3DX12_VERSIONED_ROOT_SIGNATURE_DESC rootSignatureDesc{};
-    rootSignatureDesc.Init_1_0(_countof(rootParams), rootParams, 1, &samplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
+    rootSignatureDesc.Init_1_0(_countof(rootParams), rootParams, 1, &spriteSamplerDesc, D3D12_ROOT_SIGNATURE_FLAG_ALLOW_INPUT_ASSEMBLER_INPUT_LAYOUT);
 
     ComPtr<ID3DBlob> rootSigBlob;
     auto result = D3DX12SerializeVersionedRootSignature(&rootSignatureDesc,

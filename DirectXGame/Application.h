@@ -40,6 +40,9 @@ private:
     // デバッグテキスト
     DebugText debugText;
 
+    // サウンド
+    int shotSound;
+
     // ここに必要な変数(バッファやヒープなど)を書く
     // ウィンドウ周り
     WNDCLASSEX w{};
@@ -53,6 +56,7 @@ private:
     Application();
     Application(const Application &) = delete;
     void operator=(const Application &) = delete;
+
 public:
     // Applicationのシングルトンインスタンスを得る
     static Application &GetInstance();

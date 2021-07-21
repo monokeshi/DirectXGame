@@ -16,6 +16,7 @@ private:
     InputKey();
     InputKey(const InputKey &) = delete;
     void operator=(const InputKey &) = delete;
+
 public:
     // InputKeyのシングルトンインスタンスを得る
     static InputKey &GetInstance();

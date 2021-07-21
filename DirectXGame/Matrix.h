@@ -34,6 +34,7 @@ private:
 
     // 射影変換以外すべての行列の計算を行う
     void CalcAllMatrix();
+
 public:
     Matrix(DirectX::XMFLOAT3 &position,
            DirectX::XMFLOAT3 &scale,

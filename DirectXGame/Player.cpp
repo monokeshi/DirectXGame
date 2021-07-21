@@ -1,5 +1,4 @@
-#include "PlayerController.h"
-#include "InputKey.h"
+#include "Player.h"
 #include "Object3D.h"
 #include "InputKey.h"
 #include "Camera.h"
@@ -8,20 +7,20 @@
 
 using namespace DirectX;
 
-PlayerController::PlayerController(Object3D &object3D,
-                                   InputKey &ik,
-                                   Camera &camera):
+Player::Player(Object3D &object3D,
+               InputKey &ik,
+               Camera &camera):
     object3D(object3D), ik(ik), camera(camera)
 {
     eyeAngle = 0.0f;
 }
 
-PlayerController::~PlayerController()
+Player::~Player()
 {
 }
 
 // ˆÚ“®
-void PlayerController::Move()
+void Player::Move()
 {
     // ¶
     if ( ik.IsKeyPressState(DIK_A) )
@@ -61,7 +60,7 @@ void PlayerController::Move()
 }
 
 // ƒJƒƒ‰‚Ì‰ñ“]
-void PlayerController::RotateCamera()
+void Player::RotateCamera()
 {
     // ¶‰ñ“]
     if ( ik.IsKeyPressState(DIK_LEFT) )
@@ -101,7 +100,7 @@ void PlayerController::RotateCamera()
 }
 
 // XVˆ—
-void PlayerController::Update()
+void Player::Update()
 {
     Move();
     RotateCamera();

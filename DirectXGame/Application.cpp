@@ -2,9 +2,10 @@
 #include "DirectX12Wrapper.h"
 #include "Render.h"
 #include "InputKey.h"
-#include "PlayerController.h"
+#include "Player.h"
 #include "Camera.h"
 #include "Define.h"
+#include "Sound.h"
 
 #include <DirectXMath.h>
 
@@ -97,12 +98,12 @@ bool Application::Initialize()
 
     // オブジェクト3D用
     texObj3DHandles.push_back(texture->CreateTexture({ 1.0f, 0.5f, 0.0f, 1.0f }));          // テクスチャ生成
-    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture01.png"));   // テクスチャ読み込み
-    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture02.png"));   // テクスチャ読み込み
-    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture03.png"));   // テクスチャ読み込み
     texObj3DHandles.push_back(texture->CreateTexture({ 1.0f, 0.0f, 0.0f, 1.0f }));          // テクスチャ生成
     texObj3DHandles.push_back(texture->CreateTexture({ 0.0f, 1.0f, 0.0f, 1.0f }));          // テクスチャ生成
     texObj3DHandles.push_back(texture->CreateTexture({ 0.0f, 0.0f, 1.0f, 1.0f }));          // テクスチャ生成
+    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture01.png"));   // テクスチャ読み込み
+    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture02.png"));   // テクスチャ読み込み
+    texObj3DHandles.push_back(texture->LoadTexture(L"Resources/Textures/texture03.png"));   // テクスチャ読み込み
 
     // スプライト用
     texSpriteHandles.push_back(texture->LoadSpriteTexture(L"Resources/Textures/texture01.png"));    // テクスチャ読み込み
@@ -168,6 +169,10 @@ bool Application::Initialize()
     /*-------------------デバッグテキスト-------------------*/
     debugText.Initialize(texDebugTextHandle, *dx12, *render, *texture);
 
+    /*-------------------サウンド-------------------*/
+    Sound::GetInstance()->Initialize();
+    shotSound = Sound::GetInstance()->LoadSoundWave("Resources/Sounds/shot.wav");
+
     return true;
 }
 
@@ -182,8 +187,8 @@ void Application::Run()
     // 視点角度
     float eyeAngle = 0.0f;
 
-    // プレイヤーコントローラー生成
-    PlayerController plctrl(PlayerController(*object3Ds[0], ik, *camera));
+    // プレイヤー生成
+    Player player(Player(*object3Ds[0], ik, *camera));
 
     // 一時的なオブジェクトのテクスチャハンドルのインデックス
     std::vector<int> texIndex;
@@ -219,7 +224,7 @@ void Application::Run()
         ik.KeyInfoUpdate(dx12->GetDevkeyboard());
 
         // プレイヤーコントローラー
-        plctrl.Update();
+        player.Update();
 
         // カメラの更新処理
         camera->Update();
@@ -242,6 +247,12 @@ void Application::Run()
             meshs[i]->Update();
         }
 
+        // サウンド
+        if ( ik.IsKeyTrigger(DIK_SPACE) )
+        {
+            //Sound::GetInstance()->SoundPlayWave(shotSound);
+        }
+
         //dx12.get()->Update();
 
         /*-------------------描画処理-------------------*/
@@ -262,12 +273,12 @@ void Application::Run()
         render->BeginDrawSprite();
         for ( int i = 0; i < sprites.size(); ++i )
         {
-            sprites[i]->Draw(texDebugTextHandle);
+            sprites[i]->Draw(texSpriteHandles[0]);
         }
 
         // デバッグテキスト
-        debugText.Print(200, 300, "Hello World!", 2.0f);
-        debugText.Print(200, 500, "0.123329", 1.5f);
+        debugText.Print(200, 300, 1.0f, "Hello World!");
+        debugText.Print(200, 320, 1.0f, "0.123329");
         debugText.DrawAll();
 
         // 描画後処理
@@ -281,6 +292,9 @@ void Application::Run()
 // 後処理
 void Application::Terminate()
 {
+    // サウンド
+    Sound::GetInstance()->Terminate();
+
     // ウィンドウクラスを登録解除
     assert(w.lpszClassName != nullptr);
     UnregisterClass(w.lpszClassName, w.hInstance);
