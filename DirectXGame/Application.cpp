@@ -9,6 +9,7 @@
 #include "Sound.h"
 #include "DebugText.h"
 #include "Graphic.h"
+#include "Utility.h"
 
 #include <DirectXMath.h>
 
@@ -254,13 +255,27 @@ void Application::Run()
         if ( InputKey::GetInstance()->IsKeyDown(DIK_SPACE) &&
             !Sound::GetInstance()->CheckSoundPlay(shotSound) )
         {
-            Sound::GetInstance()->PlaySoundWave(shotSound, PLAY_TYPE_ONLY_ONCE);
+            Sound::GetInstance()->PlaySoundWave(shotSound, PLAY_TYPE_LOOP);
         }
 
         if ( InputKey::GetInstance()->IsKeyDown(DIK_M) )
         {
             Sound::GetInstance()->StopSoundWave(shotSound, STOP_TYPE_PAUSE);
         }
+
+        static float vol = 1.0f;
+        if ( InputKey::GetInstance()->IsKeyDown(DIK_UP) )
+        {
+            
+            vol += 0.1f;
+            Sound::GetInstance()->ChangeSoundVolume(shotSound, vol);
+        }
+        if ( InputKey::GetInstance()->IsKeyDown(DIK_DOWN) )
+        {
+            vol -= 0.1f;
+            Sound::GetInstance()->ChangeSoundVolume(shotSound, vol);
+        }
+        Utility::Clamp(vol, 0.0f, 1.0f);
 
         //dx12.get()->Update();
 

@@ -1,4 +1,5 @@
 #include "Sound.h"
+#include "Utility.h"
 
 #include <fstream>
 #include <assert.h>
@@ -194,6 +195,12 @@ void Sound::PlaySoundWave(const int &handle, PlayType playType)
 // 再生停止
 void Sound::StopSoundWave(const int &handle, StopType stopType)
 {
+    // nullチェック
+    if ( sourceVoice[handle] == nullptr )
+    {
+        return;
+    }
+
     // 再生中でない
     if ( !CheckSoundPlay(handle) )
     {
@@ -218,6 +225,7 @@ void Sound::StopSoundWave(const int &handle, StopType stopType)
 // 再生中かチェック true:再生中 false:再生されていない
 bool Sound::CheckSoundPlay(const int &handle)
 {
+    // null&stopチェック
     if ( sourceVoice[handle] == nullptr || isStop[handle] )
     {
         return false;
@@ -230,9 +238,18 @@ bool Sound::CheckSoundPlay(const int &handle)
 }
 
 // 音量変更
-void Sound::ChangeSoundVolume(const int &handle, int volume)
+void Sound::ChangeSoundVolume(const int &handle, float volume)
 {
+    // nullチェック
+    if ( sourceVoice[handle] == nullptr )
+    {
+        return;
+    }
 
+    Utility::Clamp(volume, 0.0f, 1.0f);
+
+    auto result = sourceVoice[handle]->SetVolume(volume);
+    assert(SUCCEEDED(result));
 }
 
 // 音声データ解放

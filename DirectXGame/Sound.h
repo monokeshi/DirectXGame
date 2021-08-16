@@ -88,8 +88,23 @@ public:
     bool CheckSoundPlay(const int &handle);
 
     // 音量変更
-    void ChangeSoundVolume(const int &handle, int volume);
+    // volume 0.0f ~ 1.0f
+    void ChangeSoundVolume(const int &handle, float volume);
 
     // 音声データ解放
     void UnloadSound(SoundData *soundData);
+
+    // 音量取得
+    float GetSoundVolume(const int &handle) const
+    {
+        // nullチェック
+        if ( sourceVoice[handle] == nullptr )
+        {
+            return 0.0f;
+        }
+
+        float volume;
+        sourceVoice[handle]->GetVolume(&volume);
+        return volume;
+    }
 };
