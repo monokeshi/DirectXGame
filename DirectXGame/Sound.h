@@ -3,6 +3,7 @@
 #include <xaudio2.h>
 #include <wrl.h>
 #include <vector>
+#include <memory>
 
 // チャンクヘッダ
 struct ChunkHeader
@@ -33,6 +34,19 @@ struct SoundData
     unsigned int bufferSize;    // バッファのサイズ
 };
 
+// プレイタイプ
+enum PlayType
+{
+    PLAY_TYPE_ONLY_ONCE,    // 1度だけ再生
+    PLAY_TYPE_LOOP,         // ループ
+};
+
+enum StopType
+{
+    STOP_TYPE_PAUSE,            // 一時停止
+    STOP_TYPE_COMPLETE_STOP,    // 完全停止
+};
+
 class Sound
 {
 private:
@@ -41,15 +55,18 @@ private:
 
     std::vector<SoundData> soundData{};
 
+    std::vector<IXAudio2SourceVoice *> sourceVoice;
+    std::vector<XAUDIO2_BUFFER> buffer{};
+    std::vector<bool> isStop;
+
     static int soundDataIndex;
 
     Sound();
+    ~Sound();
     Sound(const Sound &) = delete;
     void operator=(const Sound &) = delete;
 
 public:
-    ~Sound();
-
     static Sound *GetInstance();
 
     // 初期化処理
@@ -62,8 +79,17 @@ public:
     int LoadSoundWave(const char *fileName);
 
     // 音声再生
-    void SoundPlayWave(const int &index);
+    void PlaySoundWave(const int &handle, PlayType playType);
+
+    // 再生停止
+    void StopSoundWave(const int &handle, StopType stopType);
+
+    // 再生中かチェック true:再生中 false:再生されていない
+    bool CheckSoundPlay(const int &handle);
+
+    // 音量変更
+    void ChangeSoundVolume(const int &handle, int volume);
 
     // 音声データ解放
-    void SoundUnload(SoundData *soundData);
+    void UnloadSound(SoundData *soundData);
 };

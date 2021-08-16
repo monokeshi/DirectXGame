@@ -35,9 +35,9 @@ public:
     void MoveZ(float move);
 
     // ‰ñ“]
-    void RotateX(float angle);
-    void RotateY(float angle);
-    void RotateZ(float angle);
+    void RotateBaseX(float angle);  // X²Šî€
+    void RotateBaseZ(float angle);  // Y²Šî€
+    void RotateBaseY(float angle);  // Z²Šî€
 
     DirectX::XMMATRIX *GetMatView()
     {

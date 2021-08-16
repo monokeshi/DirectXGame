@@ -9,7 +9,6 @@ class InputKey
 private:
     BYTE key[256];
     BYTE oldKey[256];
-    int arraySize;
 
     // シングルトンのためにコンストラクタをprivateに
     // コピーと代入を禁止する
@@ -18,17 +17,17 @@ private:
     void operator=(const InputKey &) = delete;
 
 public:
+    ~InputKey();
+
     // InputKeyのシングルトンインスタンスを得る
-    static InputKey &GetInstance();
+    static InputKey *GetInstance();
 
     // キーボード情報の更新
-    void KeyInfoUpdate(IDirectInputDevice8W *devkeyboard);
+    void Update(IDirectInputDevice8 *devKeyboard);
     // 押されている状態か
-    bool IsKeyPressState(int keyCode);
-    // 離されている状態か
-    bool IsKeyReleaseState(int keyCode);
+    bool IsKeyPress(int keyCode);
     // 押した瞬間か
-    bool IsKeyTrigger(int keyCode);
+    bool IsKeyDown(int keyCode);
     // 離した瞬間か
-    bool IsKeyRelease(int keyCode);
+    bool IsKeyUp(int keyCode);
 };

@@ -147,7 +147,9 @@
     <ClCompile Include="DebugText.cpp" />
     <ClCompile Include="Define.cpp" />
     <ClCompile Include="DirectX12Wrapper.cpp" />
+    <ClCompile Include="Graphic.cpp" />
     <ClCompile Include="InputKey.cpp" />
+    <ClCompile Include="InputMouse.cpp" />
     <ClCompile Include="Main.cpp" />
     <ClCompile Include="Object3D.cpp" />
     <ClCompile Include="Player.cpp" />
@@ -164,7 +166,9 @@
     <ClInclude Include="DebugText.h" />
     <ClInclude Include="Define.h" />
     <ClInclude Include="DirectX12Wrapper.h" />
+    <ClInclude Include="Graphic.h" />
     <ClInclude Include="InputKey.h" />
+    <ClInclude Include="InputMouse.h" />
     <ClInclude Include="Object3D.h" />
     <ClInclude Include="Player.h" />
     <ClInclude Include="Matrix.h" />

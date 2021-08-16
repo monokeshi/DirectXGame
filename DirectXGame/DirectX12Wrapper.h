@@ -40,7 +40,8 @@ private:
     float clearColor[RGBA];
 
     // 入力デバイス
-    IDirectInputDevice8 *devkeyboard = nullptr;
+    ComPtr<IDirectInputDevice8> devKeyboard = nullptr;
+    ComPtr<IDirectInputDevice8> devMouse = nullptr;
 
     // DXGIまわり初期化
     HRESULT InitDXGIDevice();
@@ -88,8 +89,13 @@ public:
         return cmdList.Get();
     }
 
-    IDirectInputDevice8 *GetDevkeyboard()
+    IDirectInputDevice8 *GetDevKeyboard()
     {
-        return devkeyboard;
+        return devKeyboard.Get();
+    }
+    
+    IDirectInputDevice8 *GetDevMouse()
+    {
+        return devMouse.Get();
     }
 };

@@ -2,10 +2,13 @@
 #include "DirectX12Wrapper.h"
 #include "Render.h"
 #include "InputKey.h"
+#include "InputMouse.h"
 #include "Player.h"
 #include "Camera.h"
 #include "Define.h"
 #include "Sound.h"
+#include "DebugText.h"
+#include "Graphic.h"
 
 #include <DirectXMath.h>
 
@@ -166,8 +169,10 @@ bool Application::Initialize()
         sprites.push_back(sp);
     }
 
+    Graphic::GetInstance()->Initialize(*dx12, *render, render->GetBasicDescHeap());
+
     /*-------------------デバッグテキスト-------------------*/
-    debugText.Initialize(texDebugTextHandle, *dx12, *render, *texture);
+    DebugText::GetInstance()->Initialize(texDebugTextHandle, *dx12, *render, *texture);
 
     /*-------------------サウンド-------------------*/
     Sound::GetInstance()->Initialize();
@@ -181,14 +186,11 @@ void Application::Run()
 {
     MSG msg{};
 
-    // キー入力生成
-    auto &ik = InputKey::GetInstance();
-
     // 視点角度
     float eyeAngle = 0.0f;
 
     // プレイヤー生成
-    Player player(Player(*object3Ds[0], ik, *camera));
+    Player player(Player(*object3Ds[0], *camera));
 
     // 一時的なオブジェクトのテクスチャハンドルのインデックス
     std::vector<int> texIndex;
@@ -214,14 +216,15 @@ void Application::Run()
         }
 
         // ゲーム終了
-        if ( ik.IsKeyRelease(DIK_ESCAPE) )
+        if ( InputKey::GetInstance()->IsKeyUp(DIK_ESCAPE) )
         {
             break;
         }
 
         /*-------------------更新処理-------------------*/
-        // キーボード情報の更新
-        ik.KeyInfoUpdate(dx12->GetDevkeyboard());
+        // 入力デバイスの更新
+        InputKey::GetInstance()->Update(dx12->GetDevKeyboard());
+        InputMouse::GetInstance()->Update(dx12->GetDevMouse());
 
         // プレイヤーコントローラー
         player.Update();
@@ -248,9 +251,15 @@ void Application::Run()
         }
 
         // サウンド
-        if ( ik.IsKeyTrigger(DIK_SPACE) )
+        if ( InputKey::GetInstance()->IsKeyDown(DIK_SPACE) &&
+            !Sound::GetInstance()->CheckSoundPlay(shotSound) )
         {
-            //Sound::GetInstance()->SoundPlayWave(shotSound);
+            Sound::GetInstance()->PlaySoundWave(shotSound, PLAY_TYPE_ONLY_ONCE);
+        }
+
+        if ( InputKey::GetInstance()->IsKeyDown(DIK_M) )
+        {
+            Sound::GetInstance()->StopSoundWave(shotSound, STOP_TYPE_PAUSE);
         }
 
         //dx12.get()->Update();
@@ -277,9 +286,9 @@ void Application::Run()
         }
 
         // デバッグテキスト
-        debugText.Print(200, 300, 1.0f, "Hello World!");
-        debugText.Print(200, 320, 1.0f, "0.123329");
-        debugText.DrawAll();
+        DebugText::GetInstance()->Print(200, 300, 1.0f, "Hello World!");
+        DebugText::GetInstance()->Print(200, 320, 1.0f, "0.123329");
+        DebugText::GetInstance()->DrawAll();
 
         // 描画後処理
         dx12->EndDraw();
@@ -292,6 +301,9 @@ void Application::Run()
 // 後処理
 void Application::Terminate()
 {
+    // グラフィック
+    Graphic::GetInstance()->Terminate();
+
     // サウンド
     Sound::GetInstance()->Terminate();
 

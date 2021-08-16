@@ -6,9 +6,23 @@
 
 #include <stdarg.h>
 
-void DebugText::Initialize(const int &texIndex, DirectX12Wrapper &dx12, Render &render, Texture &texture)
+DebugText::DebugText()
 {
-    this->texIndex = texIndex;
+}
+
+DebugText::~DebugText()
+{
+}
+
+DebugText *DebugText::GetInstance()
+{
+    static DebugText instance;
+    return &instance;
+}
+
+void DebugText::Initialize(const int &texHandle, DirectX12Wrapper &dx12, Render &render, Texture &texture)
+{
+    this->texHandle = texHandle;
     spriteIndex = 0;
 
     for ( int i = 0; i < MAX_CHAR_COUNT; ++i )
@@ -54,7 +68,7 @@ void DebugText::Print(float x, float y, float scale, const std::string &text)
         sprites[spriteIndex].SetPosition({ x + FONT_WIDTH * scale * i, y, 0.0f });
         sprites[spriteIndex].ClippingTexture({ static_cast<float>(fontIndexX) * FONT_WIDTH, static_cast<float>(fontIndexY) * FONT_HEIGHT },
                                              { FONT_WIDTH, FONT_HEIGHT },
-                                             texIndex);
+                                             texHandle);
         sprites[spriteIndex].SetSize({ FONT_WIDTH * scale, FONT_HEIGHT * scale });
 
         // çXêV
@@ -75,7 +89,7 @@ void DebugText::DrawAll()
 {
     for ( int i = 0; i < spriteIndex; ++i )
     {
-        sprites[i].Draw(texIndex);
+        sprites[i].Draw(texHandle);
     }
 
     spriteIndex = 0;

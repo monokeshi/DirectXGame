@@ -275,7 +275,7 @@ HRESULT DirectX12Wrapper::CreateDepthBuffer()
 HRESULT DirectX12Wrapper::CreateInputDevice(WNDCLASSEX w, HWND hwnd)
 {
     // 入力の生成
-    IDirectInput8 *dinput = nullptr;
+    ComPtr<IDirectInput8> dinput = nullptr;
     auto result = DirectInput8Create(w.hInstance,
                                      DIRECTINPUT_VERSION,
                                      IID_IDirectInput8,
@@ -283,19 +283,36 @@ HRESULT DirectX12Wrapper::CreateInputDevice(WNDCLASSEX w, HWND hwnd)
                                      nullptr);
     assert(SUCCEEDED(result));
 
-    // キーボードデバイスの生成
+    /*--------キーボード--------*/
+    // デバイスの生成
     result = dinput->CreateDevice(GUID_SysKeyboard,
-                                  &devkeyboard,
+                                  &devKeyboard,
                                   NULL);
     assert(SUCCEEDED(result));
 
     // 入力データ形式のセット
-    result = devkeyboard->SetDataFormat(&c_dfDIKeyboard); // 標準形式
+    result = devKeyboard->SetDataFormat(&c_dfDIKeyboard); // 標準形式
     assert(SUCCEEDED(result));
 
     // 排他制御レベルのセット
-    result = devkeyboard->SetCooperativeLevel(hwnd,
+    result = devKeyboard->SetCooperativeLevel(hwnd,
                                               DISCL_FOREGROUND | DISCL_NONEXCLUSIVE | DISCL_NOWINKEY);
+    assert(SUCCEEDED(result));
+
+    /*--------マウス--------*/
+    // デバイスの生成
+    result = dinput->CreateDevice(GUID_SysMouse,
+                                  &devMouse,
+                                  NULL);
+    assert(SUCCEEDED(result));
+
+    // 入力データ形式のセット
+    result = devMouse->SetDataFormat(&c_dfDIMouse); // 標準形式
+    assert(SUCCEEDED(result));
+
+    // 排他制御レベルのセット
+    result = devMouse->SetCooperativeLevel(hwnd,
+                                           DISCL_FOREGROUND | DISCL_NONEXCLUSIVE);
     assert(SUCCEEDED(result));
 
     return result;

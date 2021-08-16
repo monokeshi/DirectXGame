@@ -1,16 +1,16 @@
 #include "Player.h"
 #include "Object3D.h"
-#include "InputKey.h"
 #include "Camera.h"
+#include "InputKey.h"
+#include "InputMouse.h"
 
 #include <dinput.h>
 
 using namespace DirectX;
 
 Player::Player(Object3D &object3D,
-               InputKey &ik,
                Camera &camera):
-    object3D(object3D), ik(ik), camera(camera)
+    object3D(object3D), camera(camera)
 {
     eyeAngle = 0.0f;
 }
@@ -23,37 +23,37 @@ Player::~Player()
 void Player::Move()
 {
     // ¶
-    if ( ik.IsKeyPressState(DIK_A) )
+    if ( InputKey::GetInstance()->IsKeyPress(DIK_A) )
     {
         object3D.MoveX(-1.0f);
     }
 
     // ‰E
-    if ( ik.IsKeyPressState(DIK_D) )
+    if ( InputKey::GetInstance()->IsKeyPress(DIK_D) )
     {
         object3D.MoveX(1.0f);
     }
 
     // ã
-    if ( ik.IsKeyPressState(DIK_W) )
+    if ( InputKey::GetInstance()->IsKeyPress(DIK_W) )
     {
         object3D.MoveY(1.0f);
     }
 
     // ‰º
-    if ( ik.IsKeyPressState(DIK_S) )
+    if ( InputKey::GetInstance()->IsKeyPress(DIK_S) )
     {
         object3D.MoveY(-1.0f);
     }
 
     // ‰œ
-    if ( ik.IsKeyPressState(DIK_Q) )
+    if ( InputKey::GetInstance()->IsKeyPress(DIK_Q) )
     {
         object3D.MoveZ(1.0f);
     }
 
     // Žè‘O
-    if ( ik.IsKeyPressState(DIK_E) )
+    if ( InputKey::GetInstance()->IsKeyPress(DIK_E) )
     {
         object3D.MoveZ(-1.0f);
     }
@@ -63,39 +63,35 @@ void Player::Move()
 void Player::RotateCamera()
 {
     // ¶‰ñ“]
-    if ( ik.IsKeyPressState(DIK_LEFT) )
+    if ( InputKey::GetInstance()->IsKeyPress(DIK_LEFT) )
     {
         eyeAngle += XMConvertToRadians(1.0f);
 
         // YŽ²‚Ü‚í‚è‚É‰ñ“]
-        camera.RotateX(eyeAngle);
-        camera.RotateZ(eyeAngle);
+        camera.RotateBaseY(eyeAngle);
     }
 
     // ‰E‰ñ“]
-    if ( ik.IsKeyPressState(DIK_RIGHT) )
+    if ( InputKey::GetInstance()->IsKeyPress(DIK_RIGHT) )
     {
         eyeAngle -= XMConvertToRadians(1.0f);
 
         // YŽ²‚Ü‚í‚è‚É‰ñ“]
-        camera.RotateX(eyeAngle);
-        camera.RotateZ(eyeAngle);
+        camera.RotateBaseY(eyeAngle);
     }
 
     // ã‰ñ“]
-    if ( ik.IsKeyPressState(DIK_UP) )
+    if ( InputMouse::GetInstance()->IsMousePress(DIM_LEFT) )
     {
         eyeAngle += XMConvertToRadians(1.0f);
-        camera.RotateY(eyeAngle);
-        camera.RotateZ(eyeAngle);
+        camera.RotateBaseX(eyeAngle);
     }
 
     // ‰º‰ñ“]
-    if ( ik.IsKeyPressState(DIK_DOWN) )
+    if ( InputMouse::GetInstance()->IsMousePress(DIM_RIGHT) )
     {
         eyeAngle -= XMConvertToRadians(1.0f);
-        camera.RotateY(eyeAngle);
-        camera.RotateZ(eyeAngle);
+        camera.RotateBaseX(eyeAngle);
     }
 }
 
@@ -107,25 +103,25 @@ void Player::Update()
 
     // ƒ|ƒŠƒSƒ“‚Ì‰ñ“]
     // ¶
-    if ( ik.IsKeyPressState(DIK_Z) )
+    if ( InputKey::GetInstance()->IsKeyPress(DIK_Z) )
     {
         object3D.RotateY(0.5f);
     }
 
     // ‰E
-    if ( ik.IsKeyPressState(DIK_X) )
+    if ( InputKey::GetInstance()->IsKeyPress(DIK_X) )
     {
         object3D.RotateY(-0.5f);
     }
 
     // ã
-    if ( ik.IsKeyPressState(DIK_C) )
+    if ( InputKey::GetInstance()->IsKeyPress(DIK_C) )
     {
         object3D.RotateX(0.5f);
     }
 
     // ‰º
-    if ( ik.IsKeyPressState(DIK_V) )
+    if ( InputKey::GetInstance()->IsKeyPress(DIK_V) )
     {
         object3D.RotateX(-0.5f);
     }

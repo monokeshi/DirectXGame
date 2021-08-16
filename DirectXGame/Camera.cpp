@@ -61,17 +61,20 @@ void Camera::MoveZ(float move)
 }
 
 // ‰ñ“]
-void Camera::RotateX(float angle)
-{
-    eye.x = -length * sinf(angle);
-}
-
-void Camera::RotateY(float angle)
+void Camera::RotateBaseX(float angle)
 {
     eye.y = -length * sinf(angle);
+    eye.z = -length * cosf(angle);
 }
 
-void Camera::RotateZ(float angle)
+void Camera::RotateBaseY(float angle)
 {
+    eye.x = -length * sinf(angle);
     eye.z = -length * cosf(angle);
+}
+
+void Camera::RotateBaseZ(float angle)
+{
+    eye.x = -length * sinf(angle);
+    eye.y = -length * cosf(angle);
 }

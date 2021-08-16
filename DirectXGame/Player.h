@@ -1,14 +1,12 @@
 #pragma once
 
 class Object3D;
-class InputKey;
 class Camera;
 
 class Player
 {
 private:
     Object3D &object3D;
-    InputKey &ik;
     Camera &camera;
 
     float eyeAngle;
@@ -21,8 +19,7 @@ private:
 
 public:
     Player(Object3D &object3D,
-                     InputKey &ik,
-                     Camera &camera);
+           Camera &camera);
     ~Player();
 
     // XVˆ—
