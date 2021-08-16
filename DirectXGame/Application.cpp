@@ -263,19 +263,18 @@ void Application::Run()
             Sound::GetInstance()->StopSoundWave(shotSound, STOP_TYPE_PAUSE);
         }
 
-        static float vol = 1.0f;
+        static float vol = 0.5f;
         if ( InputKey::GetInstance()->IsKeyDown(DIK_UP) )
         {
             
             vol += 0.1f;
-            Sound::GetInstance()->ChangeSoundVolume(shotSound, vol);
         }
         if ( InputKey::GetInstance()->IsKeyDown(DIK_DOWN) )
         {
             vol -= 0.1f;
-            Sound::GetInstance()->ChangeSoundVolume(shotSound, vol);
         }
         Utility::Clamp(vol, 0.0f, 1.0f);
+        Sound::GetInstance()->ChangeSoundVolume(shotSound, vol);
 
         //dx12.get()->Update();
 
