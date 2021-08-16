@@ -263,7 +263,7 @@ void Application::Run()
             Sound::GetInstance()->StopSoundWave(shotSound, STOP_TYPE_PAUSE);
         }
 
-        static float vol = 0.5f;
+        static float vol = 0.50f;
         if ( InputKey::GetInstance()->IsKeyDown(DIK_UP) )
         {
             
