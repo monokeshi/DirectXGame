@@ -47,6 +47,9 @@ enum StopType
     STOP_TYPE_COMPLETE_STOP,    // Š®‘S’âŽ~
 };
 
+extern const float MIN_VOLUME;
+extern const float MAX_VOLUME;
+
 class Sound
 {
 private:

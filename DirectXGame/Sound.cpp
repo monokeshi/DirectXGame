@@ -4,6 +4,9 @@
 #include <fstream>
 #include <assert.h>
 
+const float MIN_VOLUME = 0.0f;
+const float MAX_VOLUME = 1.0f;
+
 int Sound::soundDataIndex = 0;
 
 Sound::Sound()
@@ -246,7 +249,7 @@ void Sound::ChangeSoundVolume(const int &handle, float volume)
         return;
     }
 
-    Utility::Clamp(volume, 0.0f, 1.0f);
+    Utility::Clamp(volume, MIN_VOLUME, MAX_VOLUME);
 
     auto result = sourceVoice[handle]->SetVolume(volume);
     assert(SUCCEEDED(result));

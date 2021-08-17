@@ -41,9 +41,9 @@ void DebugText::Initialize(const int &texHandle, DirectX12Wrapper &dx12, Render 
     }
 }
 
-void DebugText::Print(float x, float y, float scale, const std::string &text)
+void DebugText::Print(float x, float y, float scale, const std::string &str)
 {
-    for ( int i = 0; i < text.size(); ++i )
+    for ( int i = 0; i < str.size(); ++i )
     {
         // 最大文字数超過
         if ( spriteIndex >= MAX_CHAR_COUNT )
@@ -52,7 +52,7 @@ void DebugText::Print(float x, float y, float scale, const std::string &text)
         }
 
         // 一文字取り出す
-        const unsigned char &character = text[i];
+        const unsigned char &character = str[i];
 
         // ASCIIコードの2段分飛ばした番号を計算
         int fontIndex = character - 32;
@@ -79,9 +79,31 @@ void DebugText::Print(float x, float y, float scale, const std::string &text)
     }
 }
 
-void DebugText::PrintFormat(float x, float y, float scale, const std::string &text, ...)
+// フォーマット指定に対応
+void DebugText::PrintFormat(float x, float y, float scale, char const *const format, ...)
 {
-    va_list vvv;
+    // 可変引数
+    va_list args;
+    va_start(args, format);
+
+    int len = _vscprintf(format, args) + 1;
+
+    // 出力する文字列
+    char *buffer = (char *)malloc(len * sizeof(char));
+
+    if ( buffer != NULL )
+    {
+        vsprintf_s(buffer, len, format, args);
+
+        // 出力
+        Print(x, y, scale, buffer);
+
+        // 解放
+        free(buffer);
+    }
+
+    // 可変変数のポインタをNULLに
+    va_end(args);
 }
 
 // まとめて描画

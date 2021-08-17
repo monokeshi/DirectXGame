@@ -200,6 +200,10 @@ void Application::Run()
         texIndex.push_back((rand() % (texObj3DHandles.size() - 0)) + 0);
     }
 
+    // 入力
+    auto inputKey = InputKey::GetInstance();
+    auto inputMouse = InputMouse::GetInstance();
+
     // ゲームループ
     while ( true )
     {
@@ -217,15 +221,15 @@ void Application::Run()
         }
 
         // ゲーム終了
-        if ( InputKey::GetInstance()->IsKeyUp(DIK_ESCAPE) )
+        if ( inputKey->IsKeyUp(DIK_ESCAPE) )
         {
             break;
         }
 
         /*-------------------更新処理-------------------*/
         // 入力デバイスの更新
-        InputKey::GetInstance()->Update(dx12->GetDevKeyboard());
-        InputMouse::GetInstance()->Update(dx12->GetDevMouse());
+        inputKey->Update(dx12->GetDevKeyboard());
+        inputMouse->Update(dx12->GetDevMouse());
 
         // プレイヤーコントローラー
         player.Update();
@@ -252,29 +256,30 @@ void Application::Run()
         }
 
         // サウンド
-        if ( InputKey::GetInstance()->IsKeyDown(DIK_SPACE) &&
-            !Sound::GetInstance()->CheckSoundPlay(shotSound) )
+        static auto sound = Sound::GetInstance();
+        if ( inputKey->IsKeyDown(DIK_SPACE) &&
+            !sound->CheckSoundPlay(shotSound) )
         {
-            Sound::GetInstance()->PlaySoundWave(shotSound, PLAY_TYPE_LOOP);
+            sound->PlaySoundWave(shotSound, PLAY_TYPE_LOOP);
         }
 
-        if ( InputKey::GetInstance()->IsKeyDown(DIK_M) )
+        if ( inputKey->IsKeyDown(DIK_M) )
         {
-            Sound::GetInstance()->StopSoundWave(shotSound, STOP_TYPE_PAUSE);
+            sound->StopSoundWave(shotSound, STOP_TYPE_PAUSE);
         }
 
         static float vol = 0.50f;
-        if ( InputKey::GetInstance()->IsKeyDown(DIK_UP) )
+        if ( inputKey->IsKeyDown(DIK_UP) )
         {
-            
+
             vol += 0.1f;
         }
-        if ( InputKey::GetInstance()->IsKeyDown(DIK_DOWN) )
+        if ( inputKey->IsKeyDown(DIK_DOWN) )
         {
             vol -= 0.1f;
         }
-        Utility::Clamp(vol, 0.0f, 1.0f);
-        Sound::GetInstance()->ChangeSoundVolume(shotSound, vol);
+        Utility::Clamp(vol, MIN_VOLUME, MAX_VOLUME);
+        sound->ChangeSoundVolume(shotSound, vol);
 
         //dx12.get()->Update();
 
@@ -300,9 +305,11 @@ void Application::Run()
         }
 
         // デバッグテキスト
-        DebugText::GetInstance()->Print(200, 300, 1.0f, "Hello World!");
-        DebugText::GetInstance()->Print(200, 320, 1.0f, "0.123329");
-        DebugText::GetInstance()->DrawAll();
+        static auto debugText = DebugText::GetInstance();
+        debugText->PrintFormat(200, 300, 1.0f, "Hello World!");
+        debugText->PrintFormat(200, 320, 1.0f, "0.123329");
+        debugText->PrintFormat(200, 350, 1.0f, "vol = %.2f", vol);
+        debugText->DrawAll();
 
         // 描画後処理
         dx12->EndDraw();

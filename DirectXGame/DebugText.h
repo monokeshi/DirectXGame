@@ -28,16 +28,17 @@ private:
     DebugText(const DebugText &) = delete;
     void operator=(const DebugText &) = delete;
 
+    // 画面に描画したい文字列を1行分追加
+    void Print(float x, float y, float scale, const std::string &str);
+
 public:
     static DebugText *GetInstance();
 
     // 初期化処理
     void Initialize(const int &texHandle, DirectX12Wrapper &dx12, Render &render, Texture &texture);
 
-    // 画面に描画したい文字列を1行分追加
-    void Print(float x, float y, float scale, const std::string &text);
-
-    void PrintFormat(float x, float y, float scale, const std::string &text, ...);
+    // フォーマット指定に対応
+    void PrintFormat(float x, float y, float scale, char const *const format, ...);
 
     // まとめて描画
     void DrawAll();
