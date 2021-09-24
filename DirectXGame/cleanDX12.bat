@@ -1,16 +1,16 @@
 @echo off
-@echo ’ño‚É•s—v‚Èƒtƒ@ƒCƒ‹‚ğíœ‚µ‚Ü‚·B‚±‚ÌƒtƒHƒ‹ƒ_‚ªŒ´–{‚Å‚È‚­ƒRƒs[‚Å‚ ‚é‚±‚Æ‚ğŠm”F‚µ‚½ã‚ÅÀs‚µ‚Ä‚­‚¾‚³‚¢B
+@echo æå‡ºã«ä¸è¦ãªãƒ•ã‚¡ã‚¤ãƒ«ã‚’å‰Šé™¤ã—ã¾ã™ã€‚ã“ã®ãƒ•ã‚©ãƒ«ãƒ€ãŒåŸæœ¬ã§ãªãã‚³ãƒ”ãƒ¼ã§ã‚ã‚‹ã“ã¨ã‚’ç¢ºèªã—ãŸä¸Šã§å®Ÿè¡Œã—ã¦ãã ã•ã„ã€‚
 pause
 
 set resdir1=Resources
 set resdir2=lib
 
-echo "%resdir1%","%resdir2%"ˆÈŠO‚©‚ç•s—vƒtƒ@ƒCƒ‹‚ğíœ‚µ‚Ü‚·
+echo "%resdir1%","%resdir2%"ä»¥å¤–ã‹ã‚‰ä¸è¦ãƒ•ã‚¡ã‚¤ãƒ«ã‚’å‰Šé™¤ã—ã¾ã™ã€‚
 
 cd /d %~dp0
 call :delfiles
 
-echo íœ‚ªŠ®—¹‚µ‚Ü‚µ‚½
+echo å‰Šé™¤ãŒå®Œäº†ã—ã¾ã—ãŸ
 pause
 
 exit /b
@@ -46,9 +46,9 @@ if exist *.exe del *.exe
 if exist *.enc del *.enc
 for /d %%i in (.\*) do  (	
 	if %%~ni == %resdir1% (
-		echo %resdir1%‚ğƒXƒLƒbƒv
+		echo %resdir1%ã‚’ã‚¹ã‚­ãƒƒãƒ—
 	) else if %%~ni == %resdir2% (
-		echo %resdir2%‚ğƒXƒLƒbƒv
+		echo %resdir2%ã‚’ã‚¹ã‚­ãƒƒãƒ—
 	) else (
 		call :sub %%i
 	)
